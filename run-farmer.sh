@@ -77,7 +77,7 @@ check() {
 
 install_docker_pre() {
 	set -e
-	$(sudo apt-get -y install curl
+	sudo apt-get -y install curl
 	sudo apt-get -y install gnupg
 	sudo apt-get -y install ca-certificates
 	sudo apt-get -y install lsb-release
@@ -93,7 +93,6 @@ install_docker_pre() {
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 	curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
 	sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu"
-	) || true
 	set -eu
 
 }
