@@ -81,8 +81,7 @@ install_docker_pre() {
 	sudo apt-get -y install gnupg
 	sudo apt-get -y install ca-certificates
 	sudo apt-get -y install lsb-release
-	sudo apt -y install gpgv gpgsm gnupg-l10n gnupg dirmngr
-	sudo apt -y install  gnupg2
+	sudo apt -y install  gnupg2 || sudo apt -y install gpgv gpgsm gnupg-l10n gnupg dirmngr
 	sudo apt -y install apt-transport-https ca-certificates  software-properties-common
 	sudo apt-get -y remove docker
 	sudo apt-get -y remove docker-engine
