@@ -190,7 +190,7 @@ get_avaliable_dir() {
 
 
 ### Help Functions 
-sage() {
+usage() {
 	echo "Usage: $(basename $0) options (init | create | detele | upgrade)"
 }
 ### Help End
@@ -244,10 +244,22 @@ create_farmer(){
 	# 3,copy docker-compose.yaml 
 	# 4,修改 docker-compose
 	# 5,进入该目录docker-compose up -d 
+	echo "l" 
 }
 create_many_farmer() { 
-	#for num 
-	
+	plat_size="30G"
+	node_port=30000
+	farmer_port=40000
+	parent_path="../"
+	dir_name=""
+	address="address"
+	farmer_num=100
+	for i in {1..farmer_num}
+	do
+		echo $i
+		echo 11
+	done
+
 }
 
 
@@ -278,6 +290,7 @@ parse_args() {
 		"create")
 			print_script_name
 			msg_info "Create: We will create one or more farmer nodes according to the config configuration."
+			create_many_farmer
 			;;
 		"delete")
 			print_script_name
