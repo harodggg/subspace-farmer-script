@@ -88,10 +88,10 @@ install_docker_pre() {
 	sudo apt-get -y remove docker.io 
 	sudo apt -y remove containerd 
 	sudo apt -y remove runc
-	set -eu
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 	curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
 	sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu"
+	set -eu
 
 }
 
