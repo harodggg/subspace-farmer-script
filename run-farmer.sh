@@ -77,22 +77,10 @@ check() {
 
 install_docker_pre() {
 	set -e
-	sudo apt-get -y install curl
-	sudo apt-get -y install gnupg
-	sudo apt-get -y install ca-certificates
-	sudo apt-get -y install lsb-release
-	sudo apt-get -y install  gnupg2
-	sudo apt-get -y install apt-transport-https ca-certificates  software-properties-common
-	sudo apt-get -y remove docker
-	sudo apt-get -y remove docker-engine
-	sudo apt-get -y remove docker-engine
-	sudo apt-get -y remove docker.io
-	sudo apt-get -y remove containerd
-	sudo apt-get -y remove runc
-	sudo apt-get -y install gpgv gpgsm gnupg-l10n gnupg dirmngr
-	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-	curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
-	sudo add-apt-repository "deb [arch=arm64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+	sudo apt-get install ca-certificates curl gnupg lsb-release
+	sudo mkdir -p /etc/apt/keyrings
+	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+	echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 	set -eu
 
 }
