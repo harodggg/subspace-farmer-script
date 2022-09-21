@@ -14,34 +14,11 @@ PLOT_SIZE="30G"
 
 NODE_NAME="G_xbt"
 
-# check Os
-get_os() {
-	case "$OSTYPE" in
-	solaris*) echo "SOLARIS" ;;
-	darwin*) echo "OSX" ;;
-	linux*) echo "LINUX" ;;
-	bsd*) echo "BSD" ;;
-	msys*) echo "WINDOWS" ;;
-	*) echo "unknown: $OSTYPE" ;;
-	esac
-}
 
-upgrade_package() {
-	case $(get_os) in
-	"OSX") brew update && brew upgrade ;;
-	"LINUX") sudo apt-get -y update && sudo apt-get -y upgrade ;;
-	*) msg_error "unknown:$OSTYPE, The script does not support OS, please use mac or ubuntu! ! !" ;;
-	esac
+### Check Funcions Start
+check_info() {
+	echo "Does $* exist ?"
 }
-
-is_package_exist() {
-	if type $* >/dev/null 2>&1; then
-		echo 0
-	else
-		echo 1
-	fi
-}
-
 check_docker() {
 	num=$(is_package_exist docker)
 	if [ $num -eq 0 ]; then
@@ -75,14 +52,64 @@ check() {
 	fi
 }
 
+check_environment() {
+	msg_info "Check [1]: $(check_info docker)"
+	check_docker
+	msg_info "Check [2]: $(check_info docker-compose)"
+	check_docker_compose
+	msg_info "Check [3]: $(check_info jq)"
+	check jq
+	msg_info "Check [4]: $(check_info yq)"
+	check yq
+	msg_info "Check [5]: $(check_info netstat)"
+	check netstat install_netstat
+}
+
+check_port() {
+	result=$(netstat -atnl | grep $* | wc -l)
+	echo $result
+	if [ $result -ne 0 ]; then
+		echo "1"
+	else
+		echo "0"
+	fi
+}
+check_dir() {
+	is_exist_dir $*
+	if $?; then
+		msg_error "The farmer directory already exists, please confirm! ! !"
+	else
+		msg_success "The farmer directory does not exist, we will create it again"
+	fi
+}
+### Check Funcions End
+
+
+
+upgrade_package() {
+	case $(get_os) in
+	"OSX") brew update && brew upgrade ;;
+	"LINUX") sudo apt-get -y update && sudo apt-get -y upgrade ;;
+	*) msg_error "unknown:$OSTYPE, The script does not support OS, please use mac or ubuntu! ! !" ;;
+	esac
+}
+
+is_package_exist() {
+	if type $* >/dev/null 2>&1; then
+		echo 0
+	else
+		echo 1
+	fi
+}
+### Install Functions
 install_docker_pre() {
-	set +e 
+	set +e
 	sudo apt-get -y remove docker docker-engine docker.io containerd runc || true
 	sudo apt-get -y install ca-certificates curl gnupg lsb-release
 	sudo apt-get -y install pass gnupg2
 	sudo mkdir -p /etc/apt/keyrings
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --yes --dearmor -o /etc/apt/keyrings/docker.gpg
-	echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+	echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 	set -eu
 
 }
@@ -101,7 +128,7 @@ install_docker() {
 
 install_docker_compose() {
 	sudo apt-get -y remove docker-compose | sudo snap docker-compose
-	sudo wget https://github.com/docker/compose/releases/download/v2.11.1/docker-compose-linux-x86_64 -O  /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
+	sudo wget https://github.com/docker/compose/releases/download/v2.11.1/docker-compose-linux-x86_64 -O /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
 }
 
 install_package() {
@@ -112,20 +139,34 @@ install_package() {
 	esac
 }
 
-check_port() {
-	result=$(netstat -atnl | grep $* | wc -l)
-	echo $result
-	if [ $result -ne 0 ]; then
-		echo "1"
-	else
-		echo "0"
-	fi
-}
 
 install_netstat() {
 	install_package net-tools
 }
+### Install End
 
+### Is Functions
+is_exist_dir() {
+	if [ ! -d $* ]; then
+		return 1
+	else
+		return 0
+	fi
+}
+### Is End
+
+
+### Get Function
+get_os() {
+	case "$OSTYPE" in
+	solaris*) echo "SOLARIS" ;;
+	darwin*) echo "OSX" ;;
+	linux*) echo "LINUX" ;;
+	bsd*) echo "BSD" ;;
+	msys*) echo "WINDOWS" ;;
+	*) echo "unknown: $OSTYPE" ;;
+	esac
+}
 get_current_dir() {
 	path=$(pwd)
 	echo $path
@@ -144,28 +185,18 @@ get_avaliable_port() {
 get_avaliable_dir() {
 	echo "k"
 }
+### Get End
 
-is_exist_dir() {
-	if [ ! -d $* ]; then
-		return 1
-	else
-		return 0
-	fi
-}
 
-check_dir() {
-	is_exist_dir $*
-	if $?; then
-		msg_error "The farmer directory already exists, please confirm! ! !"
-	else
-		msg_success "The farmer directory does not exist, we will create it again"
-	fi
-}
 
-usage() {
+### Help Functions 
+sage() {
 	echo "Usage: $(basename $0) options (init | create | detele | upgrade)"
 }
+### Help End
 
+
+### Log Functions
 echo_log() {
 	now=$(date +"[%Y/%m/%d %H:%M:%S]")
 	echo -e "\033[1;$1m${now}$2\033[0m"
@@ -195,6 +226,7 @@ msg_info() {
 fatal_error() {
 	msg_error "Fatal error, cannot be fixed automatically, please contact the author! ! !"
 }
+###Log End
 
 create_farmer_dir() {
 	mkdir $*
@@ -203,21 +235,7 @@ create_farmer_dir() {
 copy_configure_file() {
 	cp $WORK_DIR/docker-compose.yaml $WORK_DIR/$FAMER_DIR
 }
-check_info() {
-	echo "Does $* exist ?"
-}
-check_environment() {
-	msg_info "Check [1]: $(check_info docker)"
-	check_docker
-	msg_info "Check [2]: $(check_info docker-compose)"
-	check_docker_compose
-	msg_info "Check [3]: $(check_info jq)"
-	check jq
-	msg_info "Check [4]: $(check_info yq)"
-	check yq
-	msg_info "Check [5]: $(check_info netstat)"
-	check netstat install_netstat
-}
+
 
 print_script_name() {
 	echo ".______       __    __  .__   __.     _______    ___      .___  ___.  _______ .______"
