@@ -1,0 +1,16 @@
+{
+    "address":[
+        "",
+        "",
+        ""
+    ],
+    "farmer_num": 1,
+    "node_available_port":[30000,40000],
+    "farmer_available_port":[40000,50000],
+    "plot_size":"30G",
+    "full_node":true,
+    "node_name":"farmer",
+    "min_serial_number":5,
+    "node_image":"ghcr.io/subspace/node:gemini-2a-2022-sep-10",
+    "farmer_image":"ghcr.io/subspace/farmer:gemini-2a-2022-sep-10"
+}
