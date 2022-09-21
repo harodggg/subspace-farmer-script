@@ -100,13 +100,8 @@ install_docker() {
 }
 
 install_docker_compose() {
-	case $(get_os) in
-	"OSX") msg_warn "You should already have docker and docker-compose installed, if not, install them manually" ;;
-	"LINUX") install_docker_pre ;;
-	*) msg_error "unknown:$OSTYPE, The script does not support OS, please use mac or ubuntu! ! !" ;;
-	esac
-	upgrade_package
-	install_package docker-compose
+	sudo apt-get -y remove docker-compose | sudo snap docker-compose
+	sudo wget https://github.com/docker/compose/releases/download/v2.11.1/docker-compose-linux-x86_64 -O  /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
 }
 
 install_package() {
