@@ -253,7 +253,7 @@ parse_args() {
 			print_script_name
 			msg_info "Init: We will initialize the environment"
 			msg_info "Checking [all]: Start checking the system environment"
-			check_environment > /dev/null 2>&1
+			check_environment 
 			msg_success "Congrats: All checks have passed !!!"
 			;;
 		"create")
