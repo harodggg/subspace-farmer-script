@@ -29,7 +29,7 @@ get_os() {
 upgrade_package() {
 	case $(get_os) in
 	"OSX") brew update && brew upgrade ;;
-	"LINUX") sudo apt -y update && sudo apt -y upgrade ;;
+	"LINUX") sudo apt-get -y update && sudo apt-get -y upgrade ;;
 	*) msg_error "unknown:$OSTYPE, The script does not support OS, please use mac or ubuntu! ! !" ;;
 	esac
 }
