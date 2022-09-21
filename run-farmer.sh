@@ -88,6 +88,7 @@ install_docker_pre() {
 	sudo apt-get -y remove docker.io 
 	sudo apt -y remove containerd 
 	sudo apt -y remove runc
+	set -eu
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 	curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
 	sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu"
@@ -129,10 +130,8 @@ check_port() {
 	echo $result
 	if [ $result -ne 0 ]; then
 		echo "1"
-		return 1
 	else
 		echo "0"
-		return 0
 	fi
 }
 
@@ -254,7 +253,7 @@ parse_args() {
 			print_script_name
 			msg_info "Init: We will initialize the environment"
 			msg_info "Checking [all]: Start checking the system environment"
-			check_environment
+			check_environment > /dev/null 2>&1
 			msg_success "Congrats: All checks have passed !!!"
 			;;
 		"create")
