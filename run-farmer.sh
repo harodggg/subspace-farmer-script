@@ -76,18 +76,19 @@ check() {
 }
 
 install_docker_pre() {
+	set -e
 	sudo apt-get -y install curl
 	sudo apt-get -y install gnupg
 	sudo apt-get -y install ca-certificates
 	sudo apt-get -y install lsb-release
 	sudo apt -y install apt-transport-https ca-certificates curl gnupg2 software-properties-common
-	set +e
 	sudo apt-get -y remove docker 
 	sudo apt-get -y remove docker-engine 
 	sudo apt-get -y remove docker-engine 
 	sudo apt-get -y remove docker.io 
 	sudo apt -y remove containerd 
 	sudo apt -y remove runc
+	sudo apt -y install  gpgv gpgsm gnupg-l10n gnupg dirmngr
 	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 	curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
 	sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu"
