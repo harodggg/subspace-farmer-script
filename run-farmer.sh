@@ -237,6 +237,20 @@ copy_configure_file() {
 }
 
 
+### Create Farmer funtion
+# 建立单个 farmer $1=parent-path $2=dir-name+path $3=address $4=node-name $5=plat-size $6=node-端口 $7=farmer-端口
+create_farmer(){
+	# 2,建立特定的目录
+	# 3,copy docker-compose.yaml 
+	# 4,修改 docker-compose
+	# 5,进入该目录docker-compose up -d 
+}
+create_many_farmer() { 
+	#for num 
+	
+}
+
+
 print_script_name() {
 	echo ".______       __    __  .__   __.     _______    ___      .___  ___.  _______ .______"
 	echo "|   _  \     |  |  |  | |  \ |  |    |   ____|  /   \     |   \/   | |   ____||   _  \	     "
