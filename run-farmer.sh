@@ -7,16 +7,14 @@ IMAGE_FARMER=""
 ADDRESS=()
 
 WORK_DIR=""
-
 FARMER_DIR=""
 
 PLOT_SIZE=""
 
 NODE_NAME=
 
-FAMER_NUM=""
+FARMER_NUM=""
 NODE_AVAILABLE_PORT=()
-
 FARMER_AVAILABLE_PORT=()
 
 ### Check Funcions Start
@@ -71,7 +69,6 @@ check_environment() {
 
 check_port() {
 	result=$(netstat -atnl | grep $* | wc -l)
-	echo $result
 	if [ $result -ne 0 ]; then
 		echo "1"
 	else
@@ -79,11 +76,13 @@ check_port() {
 	fi
 }
 check_dir() {
-	is_exist_dir $*
-	if $?; then
+	num=$(is_exist_dir $*)
+	if [ $num -eq 0 ]; then
 		msg_error "The farmer directory already exists, please confirm! ! !"
+		echo O
 	else
 		msg_success "The farmer directory does not exist, we will create it again"
+		echo 1
 	fi
 }
 
@@ -155,10 +154,14 @@ install_netstat() {
 ### Is Functions
 is_exist_dir() {
 	if [ ! -d $* ]; then
-		return 1
+		echo 1
 	else
-		return 0
+		echo 0
 	fi
+}
+
+get_all_dir() {
+	dir=$(ls -l $* | awk '/^d/ {print $NF}')
 }
 ### Is End
 
@@ -212,7 +215,7 @@ echo_log() {
 }
 
 msg_debug() {
-	echo_log 35 "[Debug] ====> $*"
+	echo_log 35 "[Build] ====> $*"
 }
 
 msg_error() {
@@ -245,9 +248,14 @@ copy_configure_file() {
 }
 
 read_config() {
-	ADDRESS=$(jq -c .address $*)
+	#ADDRESS=$(jq -rc .address[0] $*)
 	#echo $ADDRESS
-	FAMER_NUM=$(jq -rc .farmer_num $*)
+	#echo $ADDRESS
+	FARMER_NUM=$(jq -rc .farmer_num $*)
+	for ((i = 0; i < ${FARMER_NUM}; i++)); do
+		ADDRESS[$i]=$(jq -rc .address[$i] $*)
+		#echo ${ADDRESS[$i]}
+	done
 	#echo $FAMER_NUM
 	PLOT_SIZE=$(jq -rc .plot_size $*)
 	#echo $PLOT_SIZE
@@ -268,7 +276,7 @@ read_config() {
 	#show_config
 }
 
-show_config(){
+show_config() {
 	echo address: $ADDRESS
 	echo plat_size: $PLOT_SIZE
 	echo node_port_base: $NODE_AVAILABLE_PORT
@@ -282,11 +290,10 @@ show_config(){
 ### Create Farmer funtion
 # 建立单个 farmer $1=parent-path $2=dir-name+path $3=address $4=node-name $5=plat-size $6=node-端口 $7=farmer-端口
 create_farmer() {
+	echo $PLOT_SIZE
 	# 2,建立特定的目录
 	# 3,copy docker-compose.yaml
 	# 4,修改 docker-compose
-	# 5,进入该目录docker-compose up -d
-	echo "l"
 }
 create_many_farmer() {
 	plat_size="30G"
@@ -300,8 +307,8 @@ create_many_farmer() {
 	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
 
 	msg_info "Building: Start building a node"
-	framer_num=$FAMER_NUM
-	msg_info "Farmer Num: We will building \"${framer_num}\" farmer/farmers"
+	farmer_num=$FARMER_NUM
+	msg_info "Farmer Num: We will building \"${farmer_num}\" farmer/farmers"
 
 	msg_info "Base Node Name: \"${NODE_NAME}\""
 
@@ -312,21 +319,52 @@ create_many_farmer() {
 	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
 	msg_info "Base Node Port: \"${base_farmer_port}\""
 
-	for ((i = 1; i <= ${framer_num}; i++)); do
+	for ((i = 1; i <= ${farmer_num}; i++)); do
 		node_name=$NODE_NAME${i}
-		node_port=$(( i + base_node_port ))
-		farmer_port=$(( i + base_farmer_port ))
+		node_port=$((i + base_node_port))
+		farmer_port=$((i + base_farmer_port))
+		msg_debug "=================farmer building==================="
 		msg_info "Node Sequence: We start building the \"${i}\"th farmer"
 		msg_info "Node Name: ${node_name}"
 		msg_info "Node Path: ${parent_path}/${node_name}"
 
-		# 判断目录是不是存在，目录存在，就表明这个节点已经运行，就退出。
+		# Judging whether the directory exists,
+		# the existence of the directory indicates that the node is already running, and then exits.
+		#is_path=$(check_dir "${parent_path}/${node_name}")
+		#echo "$is_path"
+		#if (( $is_path = 0 )); then
+		#	msg_success "The farmer is runing ,We will build next Farmer"
+		#	continue
+		#fi
 
+		if [ -d "${parent_path}/${node_name}" ]; then
+			msg_error "Exist: "${parent_path}/${node_name}" directory already exists"
+			msg_error "Abandon the farmer operation that continues to be established, and proceed to the next farmer establishment task"
+			msg_error "${node_name} has been failed ！！！"
+			continue
+		fi
+
+		while [ $(check_port $node_port) -ne 0 ]; do
+			msg_error "The port exists, the port is incremented by one"
+			node_port=$(($node_port + 1))
+		done
 		msg_info "Node Port: $node_port"
+
+		while [ $(check_port $farmer_port) -ne 0 ]; do
+			msg_error "The port exists, the port is incremented by one"
+			node_port=$(($node_port + 1))
+		done
 		msg_info "Farmer Port: $farmer_port"
 
-
+		msg_info "Image Node: $IMAGE_NODE"
+		msg_info "Image Node: $IMAGE_FARMER"
+		msg_info "Plot Size: $PLOT_SIZE"
+		address=${ADDRESS[$i - 1]}
+		msg_info "Address: $address"
+		create_farmer $node_name $node_port $farmer_port $address
+		msg_success "Farmer${i} has been successfully built ！！！"
 	done
+
 }
 
 print_script_name() {
