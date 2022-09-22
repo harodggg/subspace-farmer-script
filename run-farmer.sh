@@ -4,17 +4,17 @@
 IMAGE_NODE=""
 IMAGE_FARMER=""
 
-ADDRESS=("1" "2")
+ADDRESS=()
 
-WORK_DIR="/root/"
+WORK_DIR=""
 
-FARMER_DIR="farmer"
+FARMER_DIR=""
 
-PLOT_SIZE="30G"
+PLOT_SIZE=""
 
-NODE_NAME="G_xbt"
+NODE_NAME=
 
-FAMER_NUM="1"
+FAMER_NUM=""
 NODE_AVAILABLE_PORT=()
 
 FARMER_AVAILABLE_PORT=()
@@ -245,22 +245,37 @@ copy_configure_file() {
 }
 
 read_config() {
-	ADDRESS=$(jq -c .address ./config.json)
+	ADDRESS=$(jq -c .address $*)
 	#echo $ADDRESS
-	FAMER_NUM=$(jq -c .farmer_num ./config.json)
+	FAMER_NUM=$(jq -rc .farmer_num $*)
 	#echo $FAMER_NUM
-	PLOT_SIZE=$(jq -c .plot_size ./config.json)
+	PLOT_SIZE=$(jq -rc .plot_size $*)
 	#echo $PLOT_SIZE
-	NODE_AVAILABLE_PORT=$(jq -c .node_available_port ./config.json)
+	NODE_AVAILABLE_PORT[0]=$(jq -rc .node_available_port[0] $*)
+	NODE_AVAILABLE_PORT[1]=$(jq -rc .node_available_port[1] $*)
 	#echo $NODE_AVAILABLE_PORT
-	FARMER_AVAILABLE_PORT=$(jq -c .farmer_available_port ./config.json)
+
+	FARMER_AVAILABLE_PORT[0]=$(jq -rc .farmer_available_port[0] $*)
+	FARMER_AVAILABLE_PORT[1]=$(jq -rc .farmer_available_port[1] $*)
+
 	#echo $FARMER_AVAILABLE_PORT
-	NODE_NAME=$(jq -c .node_name ./config.json)
+	NODE_NAME=$(jq -rc .node_name $*)
 	#echo $NODE_NAME
-	IMAGE_FARMER=$(jq -c .farmer_image ./config.json) 
+	IMAGE_FARMER=$(jq -rc .farmer_image $*)
 	#echo $IMAGE_FARMER
-	IMAGE_NODE=$(jq -c .node_image ./config.json) 
+	IMAGE_NODE=$(jq -rc .node_image $*)
 	#echo $IMAGE_NODE
+	#show_config
+}
+
+show_config(){
+	echo address: $ADDRESS
+	echo plat_size: $PLOT_SIZE
+	echo node_port_base: $NODE_AVAILABLE_PORT
+	echo framer_port_node: $FARMER_AVAILABLE_PORT
+	echo node_name: $NODE_NAME
+	echo iamge_farmer: $IMAGE_FARMER
+	echo image_node: $IMAGE_NODE
 
 }
 
@@ -275,22 +290,43 @@ create_farmer() {
 }
 create_many_farmer() {
 	plat_size="30G"
-	node_port=30000
-	farmer_port=40000
-	parent_path="../"
+	base_node_port=30000
+	base_farmer_port=40000
+	parent_path=$(get_parent_dir)
 	dir_name=""
-	address="address"
 	farmer_num=1
-	msg_info "Config: reading config.json"
+	msg_info "Config: Reading config.json"
+	read_config $(get_current_dir)/config.json
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
 
-	read_config
+	msg_info "Building: Start building a node"
+	framer_num=$FAMER_NUM
+	msg_info "Farmer Num: We will building \"${framer_num}\" farmer/farmers"
 
-	#framer_name=$(get_node_num)
-	msg_info "我们将建立N个farmer"
-	for ((i = 1; i <= $farmer_num; i++)); do
-		echo $i
+	msg_info "Base Node Name: \"${NODE_NAME}\""
+
+	msg_info "Base Dir: \"${parent_path}\""
+	base_node_port=${NODE_AVAILABLE_PORT[0]}
+	msg_info "Base Node Port: \"${base_node_port}\""
+
+	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
+	msg_info "Base Node Port: \"${base_farmer_port}\""
+
+	for ((i = 1; i <= ${framer_num}; i++)); do
+		node_name=$NODE_NAME${i}
+		node_port=$(( i + base_node_port ))
+		farmer_port=$(( i + base_farmer_port ))
+		msg_info "Node Sequence: We start building the \"${i}\"th farmer"
+		msg_info "Node Name: ${node_name}"
+		msg_info "Node Path: ${parent_path}/${node_name}"
+
+		# 判断目录是不是存在，目录存在，就表明这个节点已经运行，就退出。
+
+		msg_info "Node Port: $node_port"
+		msg_info "Farmer Port: $farmer_port"
+
+
 	done
-
 }
 
 print_script_name() {

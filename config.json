@@ -4,7 +4,7 @@
         "",
         ""
     ],
-    "farmer_num": 1,
+    "farmer_num": 2,
     "node_available_port":[30000,40000],
     "farmer_available_port":[40000,50000],
     "plot_size":"30G",
