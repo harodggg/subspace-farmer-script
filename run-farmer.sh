@@ -291,9 +291,17 @@ show_config() {
 # 建立单个 farmer $1=parent-path $2=dir-name+path $3=address $4=node-name $5=plat-size $6=node-端口 $7=farmer-端口
 create_farmer() {
 	echo $PLOT_SIZE
-	# 2,建立特定的目录
-	# 3,copy docker-compose.yaml
-	# 4,修改 docker-compose
+	# 1,建立特定的目录
+	#mkdir $1
+
+	#echo $(pwd)/docker-compose.yaml
+	# 2,copy docker-compose.yaml
+#	cp  $(pwd)/docker-compose.yaml $1
+
+	# 3,修改 docker-compose
+	# change port change name yq
+
+	
 }
 create_many_farmer() {
 	plat_size="30G"
@@ -323,10 +331,12 @@ create_many_farmer() {
 		node_name=$NODE_NAME${i}
 		node_port=$((i + base_node_port))
 		farmer_port=$((i + base_farmer_port))
+		node_path=${parent_path}/${node_name}
 		msg_debug "=================farmer building==================="
 		msg_info "Node Sequence: We start building the \"${i}\"th farmer"
 		msg_info "Node Name: ${node_name}"
-		msg_info "Node Path: ${parent_path}/${node_name}"
+		msg_info "Node Path: ${node_path}"
+		
 
 		# Judging whether the directory exists,
 		# the existence of the directory indicates that the node is already running, and then exits.
@@ -361,7 +371,7 @@ create_many_farmer() {
 		msg_info "Plot Size: $PLOT_SIZE"
 		address=${ADDRESS[$i - 1]}
 		msg_info "Address: $address"
-		create_farmer $node_name $node_port $farmer_port $address
+		create_farmer $node_path $node_name $node_port $farmer_port $address
 		msg_success "Farmer${i} has been successfully built ！！！"
 	done
 
