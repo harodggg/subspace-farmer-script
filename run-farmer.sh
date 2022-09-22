@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Images
-IMAGE_NODE="ghcr.io/subspace/node:gemini-2a-2022-sep-10"
-IMAGE_FARMER="ghcr.io/subspace/farmer:gemini-2a-2022-sep-10"
+IMAGE_NODE=""
+IMAGE_FARMER=""
 
-ADDRESS=""
+ADDRESS=("1" "2")
 
 WORK_DIR="/root/"
 
@@ -14,6 +14,10 @@ PLOT_SIZE="30G"
 
 NODE_NAME="G_xbt"
 
+FAMER_NUM="1"
+NODE_AVAILABLE_PORT=()
+
+FARMER_AVAILABLE_PORT=()
 
 ### Check Funcions Start
 check_info() {
@@ -82,9 +86,12 @@ check_dir() {
 		msg_success "The farmer directory does not exist, we will create it again"
 	fi
 }
+
+get_node_num() {
+	echo "1"
+}
+
 ### Check Funcions End
-
-
 
 upgrade_package() {
 	case $(get_os) in
@@ -101,6 +108,7 @@ is_package_exist() {
 		echo 1
 	fi
 }
+
 ### Install Functions
 install_docker_pre() {
 	set +e
@@ -139,7 +147,6 @@ install_package() {
 	esac
 }
 
-
 install_netstat() {
 	install_package net-tools
 }
@@ -154,7 +161,6 @@ is_exist_dir() {
 	fi
 }
 ### Is End
-
 
 ### Get Function
 get_os() {
@@ -185,16 +191,18 @@ get_avaliable_port() {
 get_avaliable_dir() {
 	echo "k"
 }
+
+get_node_num() {
+	jq
+	echo $num
+}
 ### Get End
 
-
-
-### Help Functions 
+### Help Functions
 usage() {
 	echo "Usage: $(basename $0) options (init | create | detele | upgrade)"
 }
 ### Help End
-
 
 ### Log Functions
 echo_log() {
@@ -236,32 +244,54 @@ copy_configure_file() {
 	cp $WORK_DIR/docker-compose.yaml $WORK_DIR/$FAMER_DIR
 }
 
+read_config() {
+	ADDRESS=$(jq -c .address ./config.json)
+	#echo $ADDRESS
+	FAMER_NUM=$(jq -c .farmer_num ./config.json)
+	#echo $FAMER_NUM
+	PLOT_SIZE=$(jq -c .plot_size ./config.json)
+	#echo $PLOT_SIZE
+	NODE_AVAILABLE_PORT=$(jq -c .node_available_port ./config.json)
+	#echo $NODE_AVAILABLE_PORT
+	FARMER_AVAILABLE_PORT=$(jq -c .farmer_available_port ./config.json)
+	#echo $FARMER_AVAILABLE_PORT
+	NODE_NAME=$(jq -c .node_name ./config.json)
+	#echo $NODE_NAME
+	IMAGE_FARMER=$(jq -c .farmer_image ./config.json) 
+	#echo $IMAGE_FARMER
+	IMAGE_NODE=$(jq -c .node_image ./config.json) 
+	#echo $IMAGE_NODE
+
+}
 
 ### Create Farmer funtion
 # 建立单个 farmer $1=parent-path $2=dir-name+path $3=address $4=node-name $5=plat-size $6=node-端口 $7=farmer-端口
-create_farmer(){
+create_farmer() {
 	# 2,建立特定的目录
-	# 3,copy docker-compose.yaml 
+	# 3,copy docker-compose.yaml
 	# 4,修改 docker-compose
-	# 5,进入该目录docker-compose up -d 
-	echo "l" 
+	# 5,进入该目录docker-compose up -d
+	echo "l"
 }
-create_many_farmer() { 
+create_many_farmer() {
 	plat_size="30G"
 	node_port=30000
 	farmer_port=40000
 	parent_path="../"
 	dir_name=""
 	address="address"
-	farmer_num=100
-	for i in {1..farmer_num}
-	do
+	farmer_num=1
+	msg_info "Config: reading config.json"
+
+	read_config
+
+	#framer_name=$(get_node_num)
+	msg_info "我们将建立N个farmer"
+	for ((i = 1; i <= $farmer_num; i++)); do
 		echo $i
-		echo 11
 	done
 
 }
-
 
 print_script_name() {
 	echo ".______       __    __  .__   __.     _______    ___      .___  ___.  _______ .______"
@@ -290,6 +320,7 @@ parse_args() {
 		"create")
 			print_script_name
 			msg_info "Create: We will create one or more farmer nodes according to the config configuration."
+
 			create_many_farmer
 			;;
 		"delete")
@@ -308,9 +339,6 @@ parse_args() {
 	done
 }
 
-set -eu
-parse_args $@
-
 #msg_success $(get_current_dir)
 #msg_success $(get_parent_dir)
 
@@ -322,12 +350,5 @@ parse_args $@
 #msg_info "Copeing docker-compose.yaml file to farmer dir"
 #cp $(get_current_dir)/docker-compose.yaml $(get_parent_dir)/$FARMER_DIR
 
-#msg_info "Configuring the node image in docker-compose.yaml"
-
-#msg_info "Configuring the farmer image in docker-compose.yaml"
-
-#msg_info "Configuring node-name in docker-compose.yaml"
-
-#msg_info "Configuring plot-size  in docker-compose.yaml"
-
-#msg_info "Configuring address  in docker-compose.yaml"
+set -eu
+parse_args $@
