@@ -1,4 +1,17 @@
 #!/bin/bash
+#   Copyright 2019-2022 harodggg
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
 
 # Images
 IMAGE_NODE=""
@@ -289,7 +302,7 @@ show_config() {
 
 ### Create Farmer funtion
 # 建立单个 farmer $1=parent-path $2=dir-name+path $3=address $4=node-name $5=plat-size $6=node-端口 $7=farmer-端口
-create_farmer() {
+csreate_farmer() {
 	echo $PLOT_SIZE
 	# 1,建立特定的目录
 	#mkdir $1
@@ -422,17 +435,6 @@ parse_args() {
 		shift 2
 	done
 }
-
-#msg_success $(get_current_dir)
-#msg_success $(get_parent_dir)
-
-#msg_info "Creating a farmer dir in " $(get_parent_dir)/$FARMER_DIR
-#parse_args
-#check_dir $(get_parent_dir)/$FARMER_DIR
-#create_farmer_dir $(get_parent_dir)/$FARMER_DIR
-
-#msg_info "Copeing docker-compose.yaml file to farmer dir"
-#cp $(get_current_dir)/docker-compose.yaml $(get_parent_dir)/$FARMER_DIR
 
 set -eu
 parse_args $@
