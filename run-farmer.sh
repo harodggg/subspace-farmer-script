@@ -1,5 +1,5 @@
 #!/bin/bash
-#   Copyright 2019-2022 harodggg
+#   Copyright 2019-2022 Harodggg
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
