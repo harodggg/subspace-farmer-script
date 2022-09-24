@@ -14,7 +14,6 @@ services:
 # If port 30333 is already occupied by another Substrate-based node, replace all
 # occurrences of `30333` in this file with another value
       - "0.0.0.0:30333:30333"
-      - "0.0.0.0:9945:9944"
     restart: unless-stopped
     command: [
       "--chain", "gemini-2a",
