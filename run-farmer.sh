@@ -13,31 +13,25 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-# Images
 IMAGE_NODE=""
 IMAGE_FARMER=""
+FARMER_DIR=""
+PLOT_SIZE=""
+NODE_NAME=""
+FARMER_NUM=""
 
 ADDRESS=()
-
-WORK_DIR=""
-FARMER_DIR=""
-
-PLOT_SIZE=""
-
-NODE_NAME=
-
-FARMER_NUM=""
 NODE_AVAILABLE_PORT=()
 FARMER_AVAILABLE_PORT=()
 
-### Check Funcions Start
+### Check Funcions
 check_info() {
 	echo "Does $* exist ?"
 }
 check_docker() {
 	num=$(is_package_exist docker)
 	if [ $num -eq 0 ]; then
-		msg_success "Exists: docker,go next"
+		msg_success "Exist: [docker]"
 	else
 		msg_error 'No Exist: docker'
 		install_docker
@@ -49,7 +43,7 @@ check_docker() {
 check_docker_compose() {
 	num=$(is_package_exist docker-compose)
 	if [ $num -eq 0 ]; then
-		msg_success "Exist: docker-compose,go next"
+		msg_success "Exist: [docker-compose]"
 	else
 		msg_error 'No Exist: docker-compose'
 		install_docker_compose
@@ -57,12 +51,12 @@ check_docker_compose() {
 }
 
 check() {
-	num=$(is_package_exist $*)
+	num=$(is_package_exist $1)
 	if [ $num -eq 0 ]; then
-		msg_success "Exist: $*,go next"
+		msg_success "Exist: [$1]"
 	else
-		msg_error "No Exist: $*"
-		msg_info "Install: $*"
+		msg_error "No Exist: [$1]"
+		msg_info "Install: [$1]"
 		install_package $1 || $($2)
 	fi
 }
@@ -99,12 +93,6 @@ check_dir() {
 	fi
 }
 
-get_node_num() {
-	echo "1"
-}
-
-### Check Funcions End
-
 upgrade_package() {
 	case $(get_os) in
 	"OSX") brew update && brew upgrade ;;
@@ -114,7 +102,7 @@ upgrade_package() {
 }
 
 is_package_exist() {
-	if type $* >/dev/null 2>&1; then
+	if type $1 >/dev/null 2>&1; then
 		echo 0
 	else
 		echo 1
@@ -162,9 +150,7 @@ install_package() {
 install_netstat() {
 	install_package net-tools
 }
-### Install End
 
-### Is Functions
 is_exist_dir() {
 	if [ ! -d $* ]; then
 		echo 1
@@ -176,9 +162,7 @@ is_exist_dir() {
 get_all_dir() {
 	dir=$(ls -l $* | awk '/^d/ {print $NF}')
 }
-### Is End
 
-### Get Function
 get_os() {
 	case "$OSTYPE" in
 	solaris*) echo "SOLARIS" ;;
@@ -200,25 +184,9 @@ get_parent_dir() {
 
 }
 
-get_avaliable_port() {
-	echo "K"
-}
-
-get_avaliable_dir() {
-	echo "k"
-}
-
-get_node_num() {
-	jq
-	echo $num
-}
-### Get End
-
-### Help Functions
 usage() {
 	echo "Usage: $(basename $0) options (init | create | detele | upgrade)"
 }
-### Help End
 
 ### Log Functions
 echo_log() {
@@ -249,11 +217,6 @@ msg_info() {
 
 fatal_error() {
 	msg_error "Fatal error, cannot be fixed automatically, please contact the author! ! !"
-}
-###Log End
-
-create_farmer_dir() {
-	mkdir $*
 }
 
 copy_configure_file() {
@@ -301,21 +264,71 @@ show_config() {
 }
 
 ### Create Farmer funtion
-# 建立单个 farmer $1=parent-path $2=dir-name+path $3=address $4=node-name $5=plat-size $6=node-端口 $7=farmer-端口
-csreate_farmer() {
-	echo $PLOT_SIZE
-	# 1,建立特定的目录
-	#mkdir $1
+# farmer $1=parent-path $2=dir-name+path $3=address $4=node-name $5=plat-size $6=node-端口 $7=farmer-端口
+create_farmer() {
+	#echo $PLOT_SIZE
+	work_dir=$(pwd)
+	#echo $work_dir
+
+	mkdir $1
 
 	#echo $(pwd)/docker-compose.yaml
-	# 2,copy docker-compose.yaml
-#	cp  $(pwd)/docker-compose.yaml $1
+	cp $(pwd)/docker-compose.yaml $1
 
-	# 3,修改 docker-compose
-	# change port change name yq
+	sleep 0.5
 
-	
+	export SNI=$IMAGE_NODE
+	yq -i '.services.node.image=env(SNI)' $1/docker-compose.yaml
+	unset SNI
+
+	export SFI=$IMAGE_FARMER
+	yq -i '.services.farmer.image=env(SFI)' $1/docker-compose.yaml
+	unset SFI
+
+	export node_name=$2
+	yq -i '.services.node.command[-1]=env(node_name)' $1/docker-compose.yaml
+	unset node_name
+
+	export node_path=$1:/var/subspace:rw
+	yq -i '.services.node.volumes[0]=env(node_path)' $1/docker-compose.yaml
+	unset node_path
+
+	export farmer_path=$1:/var/subspace:rw
+	yq -i '.services.farmer.volumes[0]=env(farmer_path)' $1/docker-compose.yaml
+	unset farmer_path
+
+	export plot_size=$PLOT_SIZE
+	yq -i '.services.farmer.command[-1]=env(plot_size)' $1/docker-compose.yaml
+	unset plot_size
+
+	export address=$5
+	yq -i '.services.farmer.command[-3]=env(address)' $1/docker-compose.yaml
+	unset address
+
+	export node_port="0.0.0.0:$3:30333"
+	yq -i '.services.node.ports[0]=env(node_port)' $1/docker-compose.yaml
+	unset node_port
+
+	export farmer_port="0.0.0.0:$4:40333"
+	yq -i '.services.farmer.ports[0]=env(farmer_port)' $1/docker-compose.yaml
+	unset farmer_port
+
+	cd $1
+	#echo $(pwd)
+	docker-compose up -d
+
+	cd $work_dir
+	#echo $(pwd)
 }
+
+delete_dir() {
+	rm -rf $*
+}
+
+stop_farmer() {
+	echo "stop farmer"
+}
+
 create_many_farmer() {
 	plat_size="30G"
 	base_node_port=30000
@@ -349,7 +362,6 @@ create_many_farmer() {
 		msg_info "Node Sequence: We start building the \"${i}\"th farmer"
 		msg_info "Node Name: ${node_name}"
 		msg_info "Node Path: ${node_path}"
-		
 
 		# Judging whether the directory exists,
 		# the existence of the directory indicates that the node is already running, and then exits.
