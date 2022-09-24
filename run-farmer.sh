@@ -315,6 +315,7 @@ create_farmer() {
 
 	cd $1
 	#echo $(pwd)
+	setenforce 0
 	sudo docker-compose up -d || sudo docker compose up 
 
 	cd $work_dir
