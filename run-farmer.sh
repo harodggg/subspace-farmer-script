@@ -314,8 +314,8 @@ create_farmer() {
 	unset farmer_port
 
 	cd $1
-	
-	sudo docker compose up || sudo docker-compose up -d 
+
+	sudo docker compose up || true || sudo docker-compose up -d 
 
 	cd $work_dir
 	#echo $(pwd)
