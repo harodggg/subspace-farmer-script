@@ -1,4 +1,6 @@
 version: "3.7"
+privileged: true
+user: root
 services:
   node:
     # Replace `snapshot-DATE` with latest release (like `snapshot-2022-apr-29`)
@@ -10,7 +12,6 @@ services:
 # sure everyone is allowed to write there
       - node-data:/var/subspace:rw
 #      - /path/to/subspace-node:/var/subspace:rw
-    user: "1000"
     ports:
 # If port 30333 is already occupied by another Substrate-based node, replace all
 # occurrences of `30333` in this file with another value
@@ -49,7 +50,6 @@ services:
 # sure everyone is allowed to write there
       - farmer-data:/var/subspace:rw
 #      - /path/to/subspace-farmer:/var/subspace:rw
-    user: "1000"
     ports:
 # Un-comment following line to unlock farmer's RPC
 #      - "127.0.0.1:9955:9955"
