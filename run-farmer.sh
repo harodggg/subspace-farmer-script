@@ -135,7 +135,7 @@ install_docker() {
 }
 
 install_docker_compose() {
-	sudo apt-get -y remove docker-compose | sudo snap docker-compose
+	sudo apt-get -y remove docker-compose && sudo snap remove docker-compose
 	sudo wget https://github.com/docker/compose/releases/download/v2.11.1/docker-compose-linux-x86_64 -O /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
 }
 
@@ -315,7 +315,7 @@ create_farmer() {
 
 	cd $1
 	#echo $(pwd)
-	docker-compose up -d
+	sudo docker-compose up -d || sudo docker compose up -d 
 
 	cd $work_dir
 	#echo $(pwd)
