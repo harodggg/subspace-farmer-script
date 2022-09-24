@@ -4,7 +4,7 @@ A very simple script to automatically configure farmer using the docker-compose 
 
 # Only supports ubuntu 20.04 lts
 
-# Use
+# Using
 
 ## Init Env
 

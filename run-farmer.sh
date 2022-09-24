@@ -61,7 +61,7 @@ check() {
 	fi
 }
 
-check_netstat() { 
+check_netstat() {
 	num=$(is_package_exist netstat)
 	if [ $num -eq 0 ]; then
 		msg_success "Exist: [netstat]"
@@ -83,7 +83,7 @@ check_environment() {
 	msg_info "Check [4]: $(check_info yq)"
 	check yq
 	msg_info "Check [5]: $(check_info netstat)"
-	check_netstat 
+	check_netstat
 
 }
 
@@ -198,7 +198,7 @@ get_parent_dir() {
 }
 
 usage() {
-	echo "Usage: $(basename $0) options (init | create | detele | upgrade)"
+	echo "Usage: $(basename $0) options (init | create | stop | detele | upgrade)"
 }
 
 ### Log Functions
@@ -338,8 +338,53 @@ delete_dir() {
 	rm -rf $*
 }
 
-stop_farmer() {
-	echo "stop farmer"
+stop_all_farmer() {
+	plat_size="30G"
+	base_node_port=30000
+	base_farmer_port=40000
+	parent_path=$(get_parent_dir)
+	dir_name=""
+	farmer_num=1
+	msg_info "Config: Reading config.json"
+	read_config $(get_current_dir)/config.json
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
+
+	msg_info "Building: Start building a node"
+	farmer_num=$FARMER_NUM
+	msg_info "Farmer Num: We will building \"${farmer_num}\" farmer/farmers"
+
+	msg_info "Base Node Name: \"${NODE_NAME}\""
+
+	msg_info "Base Dir: \"${parent_path}\""
+	base_node_port=${NODE_AVAILABLE_PORT[0]}
+	msg_info "Base Node Port: \"${base_node_port}\""
+
+	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
+	msg_info "Base Node Port: \"${base_farmer_port}\""
+
+	for ((i = 1; i <= ${farmer_num}; i++)); do
+		node_name=$NODE_NAME${i}
+		node_port=$((i + base_node_port))
+		farmer_port=$((i + base_farmer_port))
+		node_path=${parent_path}/${node_name}
+		msg_debug "=================farmer stopping==================="
+
+		if [ -d "${parent_path}/${node_name}" ]; then
+
+			cd ${parent_path}/${node_name}
+			sudo docker-compose stop
+		fi
+
+	done
+
+}
+
+upgrade_all_framer() {
+	echo 'upgrade farmer'
+}
+
+delete_all_farmer() {
+	echo "delete"
 }
 
 create_many_farmer() {
@@ -440,10 +485,27 @@ parse_args() {
 			msg_success "Congrats: All checks have passed !!!"
 			;;
 		"create")
+			if [ -n "$2" ]; then
+				case $2 in
+				"only-farmer")
+					print_script_name
+					echo "hello"
+					exit 0
+					;;
+				"only-node")
+					print_script_name
+					exit 0
+					;;
+				esac
+			fi
 			print_script_name
 			msg_info "Create: We will create one or more farmer nodes according to the config configuration."
-
 			create_many_farmer
+			;;
+		"stop")
+			print_script_name
+			msg_info "Stop:"
+			stop_all_farmer
 			;;
 		"delete")
 			print_script_name
