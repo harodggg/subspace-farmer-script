@@ -13,7 +13,7 @@ A very simple script to automatically configure farmer using the docker-compose 
 ```
 
 ## create farmer
-```
-bash ./run-farmer create
+```bash 
+    ./run-farmer create
 ```
 
