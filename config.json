@@ -9,7 +9,6 @@
     "farmer_available_port":[40000,50000],
     "plot_size":"30G",
     "node_name":"farmer",
-    "min_serial_number":5,
     "node_image":"ghcr.io/subspace/node:gemini-2a-2022-sep-10",
     "farmer_image":"ghcr.io/subspace/farmer:gemini-2a-2022-sep-10"
 }

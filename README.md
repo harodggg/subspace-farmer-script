@@ -8,8 +8,12 @@ A very simple script to automatically configure farmer using the docker-compose 
 
 ## init
 
-```bash ./run-farmer init```
+```bash 
+    ./run-farmer init
+```
 
 ## create farmer
-```bash ./run-farmer create```
+```
+bash ./run-farmer create
+```
 
