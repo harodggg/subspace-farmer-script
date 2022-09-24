@@ -61,6 +61,18 @@ check() {
 	fi
 }
 
+check_netstat() { 
+	num=$(is_package_exist netstat)
+	if [ $num -eq 0 ]; then
+		msg_success "Exist: [netstat]"
+	else
+		msg_error "No Exist: [netstat]"
+		msg_info "Install: [netstat]"
+		install_netstat
+	fi
+
+}
+
 check_environment() {
 	msg_info "Check [1]: $(check_info docker)"
 	check_docker
@@ -71,7 +83,8 @@ check_environment() {
 	msg_info "Check [4]: $(check_info yq)"
 	check yq
 	msg_info "Check [5]: $(check_info netstat)"
-	check netstat install_netstat
+	check_netstat 
+
 }
 
 check_port() {
@@ -141,8 +154,8 @@ install_docker_compose() {
 
 install_package() {
 	case $(get_os) in
-	"OSX") brew install $* ;;
-	"LINUX") sudo apt -y install $* || sudo snap install $* ;;
+	"OSX") brew install $1 ;;
+	"LINUX") sudo apt -y install $1 || sudo snap install $1 ;;
 	*) msg_error "unknown:$OSTYPE, The script does not support OS, please use mac or ubuntu! ! !" ;;
 	esac
 }
