@@ -6,7 +6,7 @@ A very simple script to automatically configure farmer using the docker-compose 
 
 # Use
 
-## init
+## Init Env
 
 ```bash 
     ./run-farmer init
@@ -14,10 +14,24 @@ A very simple script to automatically configure farmer using the docker-compose 
 <img width="924" alt="image" src="https://user-images.githubusercontent.com/31732456/192086082-54279137-1f56-4be1-8892-8dcae6caf88d.png">
 
 
-## create farmer
+## Create Farmer
 ```bash 
     ./run-farmer create
 ```
 <img width="1280" alt="image" src="https://user-images.githubusercontent.com/31732456/192086069-4b17902f-2597-4ac3-b58a-925cb0a2d4a9.png">
+
+## Upgrade Farmer(.etc)
+```bash 
+    ./run-farmer upgrade
+```
+## Delete Farmer(.etc)
+```bash 
+    ./run-farmer delete
+```
+
+
+
+
+
 
 
