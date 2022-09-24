@@ -315,7 +315,7 @@ create_farmer() {
 
 	cd $1
 
-	sudo docker compose up || true || sudo docker-compose up -d 
+	sudo docker compose up || sudo docker-compose up -d || true
 
 	cd $work_dir
 	#echo $(pwd)
