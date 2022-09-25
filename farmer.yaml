@@ -27,5 +27,10 @@ services:
       "--reward-address", "5DZhS5gUCDYUn1m5tKp3X2sBZcEJfSCfXtcxUvXMft4Gwqpa",
       "--plot-size", "30G"
     ]
+    healthcheck:
+      timeout: 5s
+# If node setup takes longer then expected, you want to increase `interval` and `retries` number.
+      interval: 30s
+      retries: 5
 volumes:
   farmer-data:

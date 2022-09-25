@@ -362,7 +362,7 @@ upgrade_farmer() {
 	work_dir=$(pwd)
 	#echo $work_dir
 
-	mkdir $1
+	#mkdir $1
 
 	#echo $(pwd)/docker-compose.yaml
 	#	cp $(pwd)/docker-compose.yaml $1
@@ -455,7 +455,6 @@ stop_all_farmer() {
 }
 
 upgrade_all_framer() {
-	stop_all_farmer
 	plat_size="30G"
 	base_node_port=30000
 	base_farmer_port=40000
@@ -548,8 +547,6 @@ delete_all_farmer() {
 		msg_info "Node Sequence-->[delete]: We start removing the farmer-[$i]"
 		msg_info "Node Name-->[delete]: ${node_name}"
 		msg_info "Node Path-->[delete]: ${node_path}"
-
-
 		if [ -d "$node_path" ]; then
 			work_dir=$(pwd)
 
@@ -564,6 +561,152 @@ delete_all_farmer() {
 }
 
 create_many_farmer() {
+	plat_size="30G"
+	base_node_port=30000
+	base_farmer_port=40000
+	parent_path=$(get_parent_dir)
+	dir_name=""
+	farmer_num=1
+	msg_info "Config: Reading config.json"
+	read_config $(get_current_dir)/config.json
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
+
+	msg_info "Building: Start building a node"
+	farmer_num=$FARMER_NUM
+	msg_info "Farmer Num: We will building \"${farmer_num}\" farmer/farmers"
+
+	msg_info "Base Node Name: \"${NODE_NAME}\""
+
+	msg_info "Base Dir: \"${parent_path}\""
+	base_node_port=${NODE_AVAILABLE_PORT[0]}
+	msg_info "Base Node Port: \"${base_node_port}\""
+
+	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
+	msg_info "Base Node Port: \"${base_farmer_port}\""
+
+	for ((i = 1; i <= ${farmer_num}; i++)); do
+		node_name=$NODE_NAME${i}
+		node_port=$((i + base_node_port))
+		farmer_port=$((i + base_farmer_port))
+		node_path=${parent_path}/${node_name}
+		msg_debug "=================farmer building==================="
+		msg_info "Node Sequence-->[build]: We start building the farmer-[$i]"
+		msg_info "Node Name-->[build]: ${node_name}"
+		msg_info "Node Path-->[build]: ${node_path}"
+
+		# Judging whether the directory exists,
+		# the existence of the directory indicates that the node is already running, and then exits.
+		#is_path=$(check_dir "${parent_path}/${node_name}")
+		#echo "$is_path"
+		#if (( $is_path = 0 )); then
+		#	msg_success "The farmer is runing ,We will build next Farmer"
+		#	continue
+		#fi
+
+		if [ -d "${parent_path}/${node_name}" ]; then
+			msg_error "Exist: "${parent_path}/${node_name}" directory already exists"
+			msg_error "Abandon the farmer operation that continues to be established, and proceed to the next farmer establishment task"
+			msg_error "${node_name} has been failed ！！！"
+			continue
+		fi
+
+		while [ $(check_port $node_port) -ne 0 ]; do
+			msg_error "The port exists, the port is incremented by one"
+			node_port=$(($node_port + 1))
+		done
+		msg_info "Node Port-->[build]: $node_port"
+
+		while [ $(check_port $farmer_port) -ne 0 ]; do
+			msg_error "The port exists, the port is incremented by one"
+			node_port=$(($node_port + 1))
+		done
+		msg_info "Farmer Port-->[build]: $farmer_port"
+
+		msg_info "Image Node-->[build]: $IMAGE_NODE"
+		msg_info "Image Node-->[build]: $IMAGE_FARMER"
+		msg_info "Plot Size-->[build]: $PLOT_SIZE"
+		address=${ADDRESS[$i - 1]}
+		msg_info "Address: $address"
+		create_farmer $node_path $node_name $node_port $farmer_port $address
+		msg_success "Farmer-[${i}] has been successfully built ！！！"
+	done
+
+}
+
+create_only_node() {
+	plat_size="30G"
+	base_node_port=30000
+	base_farmer_port=40000
+	parent_path=$(get_parent_dir)
+	dir_name=""
+	farmer_num=1
+	msg_info "Config: Reading config.json"
+	read_config $(get_current_dir)/config.json
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
+
+	msg_info "Building: Start building a node"
+	farmer_num=$FARMER_NUM
+	msg_info "Farmer Num: We will building \"${farmer_num}\" farmer/farmers"
+
+	msg_info "Base Node Name: \"${NODE_NAME}\""
+
+	msg_info "Base Dir: \"${parent_path}\""
+	base_node_port=${NODE_AVAILABLE_PORT[0]}
+	msg_info "Base Node Port: \"${base_node_port}\""
+
+	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
+	msg_info "Base Node Port: \"${base_farmer_port}\""
+
+	for ((i = 1; i <= ${farmer_num}; i++)); do
+		node_name=$NODE_NAME${i}
+		node_port=$((i + base_node_port))
+		farmer_port=$((i + base_farmer_port))
+		node_path=${parent_path}/${node_name}
+		msg_debug "=================farmer building==================="
+		msg_info "Node Sequence-->[build]: We start building the farmer-[$i]"
+		msg_info "Node Name-->[build]: ${node_name}"
+		msg_info "Node Path-->[build]: ${node_path}"
+
+		# Judging whether the directory exists,
+		# the existence of the directory indicates that the node is already running, and then exits.
+		#is_path=$(check_dir "${parent_path}/${node_name}")
+		#echo "$is_path"
+		#if (( $is_path = 0 )); then
+		#	msg_success "The farmer is runing ,We will build next Farmer"
+		#	continue
+		#fi
+
+		if [ -d "${parent_path}/${node_name}" ]; then
+			msg_error "Exist: "${parent_path}/${node_name}" directory already exists"
+			msg_error "Abandon the farmer operation that continues to be established, and proceed to the next farmer establishment task"
+			msg_error "${node_name} has been failed ！！！"
+			continue
+		fi
+
+		while [ $(check_port $node_port) -ne 0 ]; do
+			msg_error "The port exists, the port is incremented by one"
+			node_port=$(($node_port + 1))
+		done
+		msg_info "Node Port-->[build]: $node_port"
+
+		while [ $(check_port $farmer_port) -ne 0 ]; do
+			msg_error "The port exists, the port is incremented by one"
+			node_port=$(($node_port + 1))
+		done
+		msg_info "Farmer Port-->[build]: $farmer_port"
+
+		msg_info "Image Node-->[build]: $IMAGE_NODE"
+		msg_info "Image Node-->[build]: $IMAGE_FARMER"
+		msg_info "Plot Size-->[build]: $PLOT_SIZE"
+		address=${ADDRESS[$i - 1]}
+		msg_info "Address: $address"
+		create_farmer $node_path $node_name $node_port $farmer_port $address
+		msg_success "Farmer-[${i}] has been successfully built ！！！"
+	done
+
+}
+
+create_only_farmer() {
 	plat_size="30G"
 	base_node_port=30000
 	base_farmer_port=40000
@@ -665,11 +808,12 @@ parse_args() {
 				case $2 in
 				"only-farmer")
 					print_script_name
-					echo "hello"
+					create_only_farmer
 					exit 0
 					;;
 				"only-node")
 					print_script_name
+					create_only_node
 					exit 0
 					;;
 				esac
@@ -690,6 +834,7 @@ parse_args() {
 		"upgrade")
 			print_script_name
 			msg_info "Upgrade: We will Upgrade one or more farmer nodes according to the config configuration."
+			upgrade_all_framer
 			;;
 		*)
 			echo "fatal"
