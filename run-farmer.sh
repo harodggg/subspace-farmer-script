@@ -357,6 +357,64 @@ create_farmer() {
 	#echo $(pwd)
 }
 
+upgrade_farmer() { 
+	#echo $PLOT_SIZE
+	work_dir=$(pwd)
+	#echo $work_dir
+
+	mkdir $1
+
+	#echo $(pwd)/docker-compose.yaml
+#	cp $(pwd)/docker-compose.yaml $1
+	cd $1
+
+	sleep 0.5
+
+	export SNI=$IMAGE_NODE
+	yq -i '.services.node.image=env(SNI)' $1/docker-compose.yaml
+	unset SNI
+
+	export SFI=$IMAGE_FARMER
+	yq -i '.services.farmer.image=env(SFI)' $1/docker-compose.yaml
+	unset SFI
+
+	export node_name=$2
+	yq -i '.services.node.command[-1]=env(node_name)' $1/docker-compose.yaml
+	unset node_name
+
+	export node_path=$1:/var/subspace:rw
+	yq -i '.services.node.volumes[0]=env(node_path)' $1/docker-compose.yaml
+	unset node_path
+
+	export farmer_path=$1:/var/subspace:rw
+	yq -i '.services.farmer.volumes[0]=env(farmer_path)' $1/docker-compose.yaml
+	unset farmer_path
+
+	export plot_size=$PLOT_SIZE
+	yq -i '.services.farmer.command[-1]=env(plot_size)' $1/docker-compose.yaml
+	unset plot_size
+
+	export address=$5
+	yq -i '.services.farmer.command[-3]=env(address)' $1/docker-compose.yaml
+	unset address
+
+	export node_port="0.0.0.0:$3:30333"
+	yq -i '.services.node.ports[0]=env(node_port)' $1/docker-compose.yaml
+	unset node_port
+
+	export farmer_port="0.0.0.0:$4:40333"
+	yq -i '.services.farmer.ports[0]=env(farmer_port)' $1/docker-compose.yaml
+	unset farmer_port
+
+	cd $1
+
+	sudo docker-compose up -d || true
+
+	cd $work_dir
+	#echo $(pwd)
+
+}
+
 delete_dir() {
 	rm -rf $*
 }
@@ -394,7 +452,76 @@ stop_all_farmer() {
 }
 
 upgrade_all_framer() {
-	echo 'upgrade farmer'
+	stop_all_farmer
+	plat_size="30G"
+	base_node_port=30000
+	base_farmer_port=40000
+	parent_path=$(get_parent_dir)
+	dir_name=""
+	farmer_num=1
+	msg_info "Config: Reading config.json"
+	read_config $(get_current_dir)/config.json
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
+
+	msg_info "Building: Start building a node"
+	farmer_num=$FARMER_NUM
+	msg_info "Farmer Num: We will building \"${farmer_num}\" farmer/farmers"
+
+	msg_info "Base Node Name: \"${NODE_NAME}\""
+
+	msg_info "Base Dir: \"${parent_path}\""
+	base_node_port=${NODE_AVAILABLE_PORT[0]}
+	msg_info "Base Node Port: \"${base_node_port}\""
+
+	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
+	msg_info "Base Node Port: \"${base_farmer_port}\""
+
+	for ((i = 1; i <= ${farmer_num}; i++)); do
+		node_name=$NODE_NAME${i}
+		node_port=$((i + base_node_port))
+		farmer_port=$((i + base_farmer_port))
+		node_path=${parent_path}/${node_name}
+		msg_debug "=================farmer building==================="
+		msg_info "Node Sequence: We start building the \"${i}\"th farmer"
+		msg_info "Node Name: ${node_name}"
+		msg_info "Node Path: ${node_path}"
+
+		# Judging whether the directory exists,
+		# the existence of the directory indicates that the node is already running, and then exits.
+		#is_path=$(check_dir "${parent_path}/${node_name}")
+		#echo "$is_path"
+		#if (( $is_path = 0 )); then
+		#	msg_success "The farmer is runing ,We will build next Farmer"
+		#	continue
+		#fi
+
+	#	if [ -d "${parent_path}/${node_name}" ]; then
+	#		msg_error "Exist: "${parent_path}/${node_name}" directory already exists"
+	#		msg_error "Abandon the farmer operation that continues to be established, and proceed to the next farmer establishment task"
+	#		msg_error "${node_name} has been failed ！！！"
+	#		continue
+	#	fi
+
+		while [ $(check_port $node_port) -ne 0 ]; do
+			msg_error "The port exists, the port is incremented by one"
+			node_port=$(($node_port + 1))
+		done
+		msg_info "Node Port: $node_port"
+
+		while [ $(check_port $farmer_port) -ne 0 ]; do
+			msg_error "The port exists, the port is incremented by one"
+			node_port=$(($node_port + 1))
+		done
+		msg_info "Farmer Port: $farmer_port"
+
+		msg_info "Image Node: $IMAGE_NODE"
+		msg_info "Image Node: $IMAGE_FARMER"
+		msg_info "Plot Size: $PLOT_SIZE"
+		address=${ADDRESS[$i - 1]}
+		msg_info "Address: $address"
+		upgrade_farmer $node_path $node_name $node_port $farmer_port $address
+		msg_success "Farmer${i} has been successfully built ！！！"
+	done
 }
 
 delete_all_farmer() {
