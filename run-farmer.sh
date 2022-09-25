@@ -288,6 +288,68 @@ read_config() {
 	#show_config
 }
 
+read_node_config() {
+	#ADDRESS=$(jq -rc .address[0] $*)
+	#echo $ADDRESS
+	#echo $ADDRESS
+	#FARMER_NUM=$(jq -rc .farmer_num $*)
+	#for ((i = 0; i < ${FARMER_NUM}; i++)); do
+	#	ADDRESS[$i]=$(jq -rc .address[$i] $*)
+	#	#echo ${ADDRESS[$i]}
+	#done
+	#echo $FAMER_NUM
+	PLOT_SIZE=$(jq -rc .plot_size $*)
+	#echo $PLOT_SIZE
+	NODE_AVAILABLE_PORT[0]=$(jq -rc .node_available_port[0] $*)
+	NODE_AVAILABLE_PORT[1]=$(jq -rc .node_available_port[1] $*)
+	#echo $NODE_AVAILABLE_PORT
+
+	#FARMER_AVAILABLE_PORT[0]=$(jq -rc .farmer_available_port[0] $*)
+	#FARMER_AVAILABLE_PORT[1]=$(jq -rc .farmer_available_port[1] $*)
+
+	#echo $FARMER_AVAILABLE_PORT
+	NODE_NAME=$(jq -rc .node_name $*)
+	#echo $NODE_NAME
+	#IMAGE_FARMER=$(jq -rc .farmer_image $*)
+	#echo $IMAGE_FARMER
+	IMAGE_NODE=$(jq -rc .node_image $*)
+	#echo $IMAGE_NODE
+	#show_config
+}
+
+read_farmer_config() {
+	#ADDRESS=$(jq -rc .address[0] $*)
+	#echo $ADDRESS
+	#echo $ADDRESS
+	FARMER_NUM=$(jq -rc .farmer_num $*)
+	for ((i = 0; i < ${FARMER_NUM}; i++)); do
+		ADDRESS[$i]=$(jq -rc .address[$i] $*)
+		#echo ${ADDRESS[$i]}
+	done
+	#echo $FAMER_NUM
+	PLOT_SIZE=$(jq -rc .plot_size $*)
+	#echo $PLOT_SIZE
+	#NODE_AVAILABLE_PORT[0]=$(jq -rc .node_available_port[0] $*)
+	#NODE_AVAILABLE_PORT[1]=$(jq -rc .node_available_port[1] $*)
+	#echo $NODE_AVAILABLE_PORT
+
+	FARMER_AVAILABLE_PORT[0]=$(jq -rc .farmer_available_port[0] $*)
+	FARMER_AVAILABLE_PORT[1]=$(jq -rc .farmer_available_port[1] $*)
+
+	#echo $FARMER_AVAILABLE_PORT
+	NODE_NAME=$(jq -rc .node_name $*)
+	#echo $NODE_NAME
+	IMAGE_FARMER=$(jq -rc .farmer_image $*)
+	#echo $IMAGE_FARMER
+	#IMAGE_NODE=$(jq -rc .node_image $*)
+	#echo $IMAGE_NODE
+	#show_config
+}
+
+
+
+
+
 show_config() {
 	echo address: $ADDRESS
 	echo plat_size: $PLOT_SIZE
@@ -461,6 +523,7 @@ upgrade_all_framer() {
 	parent_path=$(get_parent_dir)
 	dir_name=""
 	farmer_num=1
+	stop_all_farmer
 	msg_info "Config: Reading config.json"
 	read_config $(get_current_dir)/config.json
 	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
@@ -633,91 +696,154 @@ create_many_farmer() {
 
 }
 
-create_only_node() {
-	plat_size="30G"
-	base_node_port=30000
-	base_farmer_port=40000
-	parent_path=$(get_parent_dir)
-	dir_name=""
-	farmer_num=1
-	msg_info "Config: Reading config.json"
-	read_config $(get_current_dir)/config.json
-	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
+create_only_node() { 
+	#echo $PLOT_SIZE
+	work_dir=$(pwd)
+	#echo $work_dir
 
-	msg_info "Building: Start building a node"
-	farmer_num=$FARMER_NUM
-	msg_info "Farmer Num: We will building \"${farmer_num}\" farmer/farmers"
+	mkdir $1
 
-	msg_info "Base Node Name: \"${NODE_NAME}\""
+	#echo $(pwd)/docker-compose.yaml
+	cp $(pwd)/docker-compose.yaml $1
 
-	msg_info "Base Dir: \"${parent_path}\""
-	base_node_port=${NODE_AVAILABLE_PORT[0]}
-	msg_info "Base Node Port: \"${base_node_port}\""
+	sleep 0.5
 
-	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
-	msg_info "Base Node Port: \"${base_farmer_port}\""
+	export SNI=$IMAGE_NODE
+	yq -i '.services.node.image=env(SNI)' $1/docker-compose.yaml
+	unset SNI
 
-	for ((i = 1; i <= ${farmer_num}; i++)); do
-		node_name=$NODE_NAME${i}
-		node_port=$((i + base_node_port))
-		farmer_port=$((i + base_farmer_port))
-		node_path=${parent_path}/${node_name}
-		msg_debug "=================farmer building==================="
-		msg_info "Node Sequence-->[build]: We start building the farmer-[$i]"
-		msg_info "Node Name-->[build]: ${node_name}"
-		msg_info "Node Path-->[build]: ${node_path}"
+	export node_name=$2
+	yq -i '.services.node.command[-1]=env(node_name)' $1/docker-compose.yaml
+	unset node_name
 
-		# Judging whether the directory exists,
-		# the existence of the directory indicates that the node is already running, and then exits.
-		#is_path=$(check_dir "${parent_path}/${node_name}")
-		#echo "$is_path"
-		#if (( $is_path = 0 )); then
-		#	msg_success "The farmer is runing ,We will build next Farmer"
-		#	continue
-		#fi
+	export node_path=$1:/var/subspace:rw
+	yq -i '.services.node.volumes[0]=env(node_path)' $1/docker-compose.yaml
+	unset node_path
 
-		if [ -d "${parent_path}/${node_name}" ]; then
-			msg_error "Exist: "${parent_path}/${node_name}" directory already exists"
-			msg_error "Abandon the farmer operation that continues to be established, and proceed to the next farmer establishment task"
-			msg_error "${node_name} has been failed ！！！"
-			continue
-		fi
+	export node_port="0.0.0.0:$3:30333"
+	yq -i '.services.node.ports[0]=env(node_port)' $1/docker-compose.yaml
+	unset node_port
 
-		while [ $(check_port $node_port) -ne 0 ]; do
-			msg_error "The port exists, the port is incremented by one"
-			node_port=$(($node_port + 1))
-		done
-		msg_info "Node Port-->[build]: $node_port"
+	cd $1
 
-		while [ $(check_port $farmer_port) -ne 0 ]; do
-			msg_error "The port exists, the port is incremented by one"
-			node_port=$(($node_port + 1))
-		done
-		msg_info "Farmer Port-->[build]: $farmer_port"
+	sudo docker-compose up -d || true
 
-		msg_info "Image Node-->[build]: $IMAGE_NODE"
-		msg_info "Image Node-->[build]: $IMAGE_FARMER"
-		msg_info "Plot Size-->[build]: $PLOT_SIZE"
-		address=${ADDRESS[$i - 1]}
-		msg_info "Address: $address"
-		create_farmer $node_path $node_name $node_port $farmer_port $address
-		msg_success "Farmer-[${i}] has been successfully built ！！！"
-	done
+	cd $work_dir
+	#echo $(pwd)
 
 }
 
+create_only_nodes() {
+	plat_size="30G"
+	base_node_port=35000
+	base_farmer_port=40000
+	parent_path=$(get_parent_dir)
+	dir_name=""
+	farmer_num=1
+	msg_info "Config: Reading node.json"
+	read_config $(get_current_dir)/node.json
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/node.json\""
+
+	msg_info "Building--<only-node>: Start building a node"
+	node_num=$NODE_NUM
+	msg_info "Node Num--<only-node>: We will building \"${node_num}\" node/nodes"
+
+	msg_info "Base Node Name--<only-node>: \"${NODE_NAME}\""
+
+	msg_info "Base Dir--<only-node>: \"${parent_path}\""
+	base_node_port=${NODE_AVAILABLE_PORT[0]}
+	msg_info "Base Node Port: \"${base_node_port}\""
+
+	for ((i = 1; i <= ${node_num}; i++)); do
+		node_name=$NODE_NAME${i}
+		node_port=$((i + base_node_port))
+		node_path=${parent_path}/${node_name}
+		msg_debug "=================Only node building==================="
+		msg_info "Node Sequence-->[build]: We start building the node-[$i]"
+		msg_info "Node Name-->[build]: ${node_name}"
+		msg_info "Node Path-->[build]: ${node_path}"
+
+		# Judging whether the directory exists,
+		# the existence of the directory indicates that the node is already running, and then exits.
+		#is_path=$(check_dir "${parent_path}/${node_name}")
+		#echo "$is_path"
+		#if (( $is_path = 0 )); then
+		#	msg_success "The farmer is runing ,We will build next Farmer"
+		#	continue
+		#fi
+
+		if [ -d "${parent_path}/${node_name}" ]; then
+			msg_error "Exist: "${parent_path}/${node_name}" directory already exists"
+			msg_error "Abandon the node operation that continues to be established, and proceed to the next farmer establishment task"
+			msg_error "${node_name} has been failed ！！！"
+			continue
+		fi
+
+		while [ $(check_port $node_port) -ne 0 ]; do
+			msg_error "The port exists, the port is incremented by one"
+			node_port=$(($node_port + 1))
+		done
+		msg_info "Node Port-->[build]: $node_port"
+		msg_info "Image Node-->[build]: $IMAGE_NODE"
+		create_only_node $node_path $node_name $node_port 
+		msg_success "Node-[${i}] has been successfully built ！！！"
+	done
+}
+
+
 create_only_farmer() {
+	#echo $PLOT_SIZE
+	work_dir=$(pwd)
+	#echo $work_dir
+
+	mkdir $1
+
+	#echo $(pwd)/docker-compose.yaml
+	cp $(pwd)/farmer.yaml $1/docker-compose.yaml
+
+	sleep 0.5
+
+	export SFI=$IMAGE_FARMER
+	yq -i '.services.farmer.image=env(SFI)' $1/docker-compose.yaml
+	unset SFI
+
+	export farmer_path=$1:/var/subspace:rw
+	yq -i '.services.farmer.volumes[0]=env(farmer_path)' $1/docker-compose.yaml
+	unset farmer_path
+
+	export plot_size=$PLOT_SIZE
+	yq -i '.services.farmer.command[-1]=env(plot_size)' $1/docker-compose.yaml
+	unset plot_size
+
+	export address=$5
+	yq -i '.services.farmer.command[-3]=env(address)' $1/docker-compose.yaml
+	unset address
+
+	export farmer_port="0.0.0.0:$4:40333"
+	yq -i '.services.farmer.ports[0]=env(farmer_port)' $1/docker-compose.yaml
+	unset farmer_port
+
+	cd $1
+
+	sudo docker-compose up -d || true
+
+	cd $work_dir
+	#echo $(pwd)
+
+}
+
+create_only_farmers() {
 	plat_size="30G"
 	base_node_port=30000
 	base_farmer_port=40000
 	parent_path=$(get_parent_dir)
 	dir_name=""
 	farmer_num=1
-	msg_info "Config: Reading config.json"
-	read_config $(get_current_dir)/config.json
-	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
+	msg_info "Config: Reading farmer.json"
+	read_config $(get_current_dir)/farmer.json
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/farmer.json\""
 
-	msg_info "Building: Start building a node"
+	msg_info "Building: Start building a farmer"
 	farmer_num=$FARMER_NUM
 	msg_info "Farmer Num: We will building \"${farmer_num}\" farmer/farmers"
 
@@ -773,7 +899,7 @@ create_only_farmer() {
 		msg_info "Plot Size-->[build]: $PLOT_SIZE"
 		address=${ADDRESS[$i - 1]}
 		msg_info "Address: $address"
-		create_farmer $node_path $node_name $node_port $farmer_port $address
+		create_only_farmer $node_path $node_name $node_port $farmer_port $address
 		msg_success "Farmer-[${i}] has been successfully built ！！！"
 	done
 
@@ -808,12 +934,12 @@ parse_args() {
 				case $2 in
 				"only-farmer")
 					print_script_name
-					create_only_farmer
+					create_only_farmers
 					exit 0
 					;;
 				"only-node")
 					print_script_name
-					create_only_node
+					create_only_nodes
 					exit 0
 					;;
 				esac
