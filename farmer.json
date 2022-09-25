@@ -1,0 +1,16 @@
+{
+    "address": [
+        "address1",
+        "address2",
+        "address3"
+    ],
+    "node-rpc": "",
+    "farmer_num": 1,
+    "farmer_available_port": [
+        45000,
+        50000
+    ],
+    "plot_size": "30G",
+    "farmer_name": "farmer",
+    "farmer_image": "ghcr.io/subspace/farmer:gemini-2a-2022-sep-10"
+}

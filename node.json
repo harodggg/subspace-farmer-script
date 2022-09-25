@@ -1,0 +1,9 @@
+{
+    "node_num": 1,
+    "node_available_port": [
+        35000,
+        40000
+    ],
+    "node_name": "farmer",
+    "node_image": "ghcr.io/subspace/node:gemini-2a-2022-sep-10",
+}
