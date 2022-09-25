@@ -357,7 +357,7 @@ create_farmer() {
 	#echo $(pwd)
 }
 
-upgrade_farmer() { 
+upgrade_farmer() {
 	#echo $PLOT_SIZE
 	work_dir=$(pwd)
 	#echo $work_dir
@@ -365,7 +365,7 @@ upgrade_farmer() {
 	mkdir $1
 
 	#echo $(pwd)/docker-compose.yaml
-#	cp $(pwd)/docker-compose.yaml $1
+	#	cp $(pwd)/docker-compose.yaml $1
 	cd $1
 
 	sleep 0.5
@@ -437,13 +437,16 @@ stop_all_farmer() {
 		node_name=$NODE_NAME${i}
 		node_path=${parent_path}/${node_name}
 		msg_debug "=================farmer stopping==================="
+		msg_info "Node Sequence->[stop]: We start stopping the farmer-[$i]"
+		msg_info "Node Name->[stop]: ${node_name}"
+		msg_info "Node Path->[stop]: ${node_path}"
 
 		if [ -d "$node_path" ]; then
 			work_dir=$(pwd)
 
 			cd ${parent_path}/${node_name}
 			sudo docker-compose stop
-			msg_info "We have successfully stopped $node_path"
+			msg_success "...->[stop]:We have successfully stopped $node_path"
 			cd $work_dir
 		fi
 
@@ -482,9 +485,9 @@ upgrade_all_framer() {
 		farmer_port=$((i + base_farmer_port))
 		node_path=${parent_path}/${node_name}
 		msg_debug "=================farmer upgrading==================="
-		msg_info "Node Sequence: We start upgrading the \"${i}\"th farmer"
-		msg_info "Node Name[upgrade]: ${node_name}"
-		msg_info "Node Path[upgrade]: ${node_path}"
+		msg_info "Node Sequence-->[upgrade]: We start upgrading the \"${i}\"th farmer"
+		msg_info "Node Name-->[upgrade]: ${node_name}"
+		msg_info "Node Path-->[upgrade]: ${node_path}"
 
 		# Judging whether the directory exists,
 		# the existence of the directory indicates that the node is already running, and then exits.
@@ -495,32 +498,32 @@ upgrade_all_framer() {
 		#	continue
 		#fi
 
-	#	if [ -d "${parent_path}/${node_name}" ]; then
-	#		msg_error "Exist: "${parent_path}/${node_name}" directory already exists"
-	#		msg_error "Abandon the farmer operation that continues to be established, and proceed to the next farmer establishment task"
-	#		msg_error "${node_name} has been failed ！！！"
-	#		continue
-	#	fi
+		#	if [ -d "${parent_path}/${node_name}" ]; then
+		#		msg_error "Exist: "${parent_path}/${node_name}" directory already exists"
+		#		msg_error "Abandon the farmer operation that continues to be established, and proceed to the next farmer establishment task"
+		#		msg_error "${node_name} has been failed ！！！"
+		#		continue
+		#	fi
 
 		while [ $(check_port $node_port) -ne 0 ]; do
 			msg_error "The port exists, the port is incremented by one"
 			node_port=$(($node_port + 1))
 		done
-		msg_info "Node Port[upgrade]: $node_port"
+		msg_info "Node Port-->[upgrade]: $node_port"
 
 		while [ $(check_port $farmer_port) -ne 0 ]; do
 			msg_error "The port exists, the port is incremented by one"
 			node_port=$(($node_port + 1))
 		done
-		msg_info "Farmer Port[upgrade]: $farmer_port"
+		msg_info "Farmer Port-->[upgrade]: $farmer_port"
 
-		msg_info "Image Node[upgrade]: $IMAGE_NODE"
-		msg_info "Image Node[upgrade]: $IMAGE_FARMER"
-		msg_info "Plot Size[upgrade]: $PLOT_SIZE"
+		msg_info "Image Node-->[upgrade]: $IMAGE_NODE"
+		msg_info "Image Node-->[upgrade]: $IMAGE_FARMER"
+		msg_info "Plot Size-->[upgrade]: $PLOT_SIZE"
 		address=${ADDRESS[$i - 1]}
-		msg_info "Address[upgrade]: $address"
+		msg_info "Address-->[upgrade]: $address"
 		upgrade_farmer $node_path $node_name $node_port $farmer_port $address
-		msg_success "Farmer${i} has been successfully upgrade ！！！"
+		msg_success "Farmer-[${i}] has been successfully upgrade ！！！"
 	done
 }
 
@@ -542,12 +545,18 @@ delete_all_farmer() {
 		node_name=$NODE_NAME${i}
 		node_path=${parent_path}/${node_name}
 		msg_debug "=================farmer Delete==================="
+		msg_info "Node Sequence-->[delete]: We start removing the farmer-[$i]"
+		msg_info "Node Name-->[delete]: ${node_name}"
+		msg_info "Node Path-->[delete]: ${node_path}"
+
 
 		if [ -d "$node_path" ]; then
 			work_dir=$(pwd)
 
+			cd ${parent_path}/${node_name}
+			sudo docker-compose stop
 			rm -rf ${parent_path}/${node_name}
-			msg_info "We have successfully deleted $node_path"
+			msg_success "...-->[detele]:We have successfully deleted $node_path"
 			cd $work_dir
 		fi
 
@@ -584,9 +593,9 @@ create_many_farmer() {
 		farmer_port=$((i + base_farmer_port))
 		node_path=${parent_path}/${node_name}
 		msg_debug "=================farmer building==================="
-		msg_info "Node Sequence: We start building the \"${i}\"th farmer"
-		msg_info "Node Name: ${node_name}"
-		msg_info "Node Path: ${node_path}"
+		msg_info "Node Sequence-->[build]: We start building the farmer-[$i]"
+		msg_info "Node Name-->[build]: ${node_name}"
+		msg_info "Node Path-->[build]: ${node_path}"
 
 		# Judging whether the directory exists,
 		# the existence of the directory indicates that the node is already running, and then exits.
@@ -608,21 +617,21 @@ create_many_farmer() {
 			msg_error "The port exists, the port is incremented by one"
 			node_port=$(($node_port + 1))
 		done
-		msg_info "Node Port: $node_port"
+		msg_info "Node Port-->[build]: $node_port"
 
 		while [ $(check_port $farmer_port) -ne 0 ]; do
 			msg_error "The port exists, the port is incremented by one"
 			node_port=$(($node_port + 1))
 		done
-		msg_info "Farmer Port: $farmer_port"
+		msg_info "Farmer Port-->[build]: $farmer_port"
 
-		msg_info "Image Node: $IMAGE_NODE"
-		msg_info "Image Node: $IMAGE_FARMER"
-		msg_info "Plot Size: $PLOT_SIZE"
+		msg_info "Image Node-->[build]: $IMAGE_NODE"
+		msg_info "Image Node-->[build]: $IMAGE_FARMER"
+		msg_info "Plot Size-->[build]: $PLOT_SIZE"
 		address=${ADDRESS[$i - 1]}
 		msg_info "Address: $address"
 		create_farmer $node_path $node_name $node_port $farmer_port $address
-		msg_success "Farmer${i} has been successfully built ！！！"
+		msg_success "Farmer-[${i}] has been successfully built ！！！"
 	done
 
 }
@@ -676,8 +685,7 @@ parse_args() {
 		"delete")
 			print_script_name
 			msg_info "Delete: We will delete one or more farmer nodes according to the config configuration."
-			stop_all_farmer
-
+			delete_all_farmer
 			;;
 		"upgrade")
 			print_script_name
