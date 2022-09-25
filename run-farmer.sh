@@ -73,16 +73,39 @@ check_netstat() {
 
 }
 
+check_snap() {
+	case $(get_os) in
+	"OSX")
+		msg_success "No need snapd"
+		;;
+
+	"LINUX")
+		num=$(is_package_exist snap)
+		if [ $num -eq 0 ]; then
+			msg_success "Exist: [snap]"
+		else
+			msg_error "No Exist: [snap]"
+			msg_info "Install: [snap]"
+			install_package snapd
+		fi
+		;;
+	*) msg_error "unknown:$OSTYPE, The script does not support OS, please use mac or ubuntu! ! !" ;;
+	esac
+}
+
 check_environment() {
 	msg_info "Check [1]: $(check_info docker)"
 	check_docker
 	msg_info "Check [2]: $(check_info docker-compose)"
 	check_docker_compose
-	msg_info "Check [3]: $(check_info jq)"
+
+	msg_info "Check[3]: $(check_info snapd)"
+	check_snap
+	msg_info "Check [4]: $(check_info jq)"
 	check jq
-	msg_info "Check [4]: $(check_info yq)"
+	msg_info "Check [5]: $(check_info yq)"
 	check yq
-	msg_info "Check [5]: $(check_info netstat)"
+	msg_info "Check [6]: $(check_info netstat)"
 	check_netstat
 
 }
@@ -198,7 +221,7 @@ get_parent_dir() {
 }
 
 usage() {
-	echo "Usage: $(basename $0) options (init | create | stop | detele | upgrade)"
+	echo "Usage: $(basename $0) options (init | create [only-farmer] | stop | detele | upgrade)"
 }
 
 ### Log Functions
@@ -349,30 +372,21 @@ stop_all_farmer() {
 	read_config $(get_current_dir)/config.json
 	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
 
-	msg_info "Building: Start building a node"
+	msg_info "Stopping: Start stopping all node"
 	farmer_num=$FARMER_NUM
-	msg_info "Farmer Num: We will building \"${farmer_num}\" farmer/farmers"
-
-	msg_info "Base Node Name: \"${NODE_NAME}\""
-
-	msg_info "Base Dir: \"${parent_path}\""
-	base_node_port=${NODE_AVAILABLE_PORT[0]}
-	msg_info "Base Node Port: \"${base_node_port}\""
-
-	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
-	msg_info "Base Node Port: \"${base_farmer_port}\""
 
 	for ((i = 1; i <= ${farmer_num}; i++)); do
 		node_name=$NODE_NAME${i}
-		node_port=$((i + base_node_port))
-		farmer_port=$((i + base_farmer_port))
 		node_path=${parent_path}/${node_name}
 		msg_debug "=================farmer stopping==================="
 
-		if [ -d "${parent_path}/${node_name}" ]; then
+		if [ -d "$node_path" ]; then
+			work_dir=$(pwd)
 
 			cd ${parent_path}/${node_name}
 			sudo docker-compose stop
+			msg_info "We have successfully stopped $node_path"
+			cd $work_dir
 		fi
 
 	done
@@ -384,7 +398,33 @@ upgrade_all_framer() {
 }
 
 delete_all_farmer() {
-	echo "delete"
+	plat_size="30G"
+	base_node_port=30000
+	base_farmer_port=40000
+	parent_path=$(get_parent_dir)
+	dir_name=""
+	farmer_num=1
+	msg_info "Config: Reading config.json"
+	read_config $(get_current_dir)/config.json
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
+
+	msg_info "Delete: Start deleting all node"
+	farmer_num=$FARMER_NUM
+
+	for ((i = 1; i <= ${farmer_num}; i++)); do
+		node_name=$NODE_NAME${i}
+		node_path=${parent_path}/${node_name}
+		msg_debug "=================farmer Delete==================="
+
+		if [ -d "$node_path" ]; then
+			work_dir=$(pwd)
+
+			rm -rf ${parent_path}/${node_name}
+			msg_info "We have successfully deleted $node_path"
+			cd $work_dir
+		fi
+
+	done
 }
 
 create_many_farmer() {
@@ -504,12 +544,13 @@ parse_args() {
 			;;
 		"stop")
 			print_script_name
-			msg_info "Stop:"
 			stop_all_farmer
 			;;
 		"delete")
 			print_script_name
 			msg_info "Delete: We will delete one or more farmer nodes according to the config configuration."
+			stop_all_farmer
+
 			;;
 		"upgrade")
 			print_script_name
