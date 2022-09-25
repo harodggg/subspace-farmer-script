@@ -652,7 +652,7 @@ parse_args() {
 			msg_success "Congrats: All checks have passed !!!"
 			;;
 		"create")
-			if [ -n "$2" ]; then
+			if [ $# -eq 2 ]; then
 				case $2 in
 				"only-farmer")
 					print_script_name
