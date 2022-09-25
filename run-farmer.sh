@@ -463,9 +463,9 @@ upgrade_all_framer() {
 	read_config $(get_current_dir)/config.json
 	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
 
-	msg_info "Building: Start building a node"
+	msg_info "Building: Start upgrading node"
 	farmer_num=$FARMER_NUM
-	msg_info "Farmer Num: We will building \"${farmer_num}\" farmer/farmers"
+	msg_info "Farmer Num: We will upgrading \"${farmer_num}\" farmer/farmers"
 
 	msg_info "Base Node Name: \"${NODE_NAME}\""
 
@@ -481,10 +481,10 @@ upgrade_all_framer() {
 		node_port=$((i + base_node_port))
 		farmer_port=$((i + base_farmer_port))
 		node_path=${parent_path}/${node_name}
-		msg_debug "=================farmer building==================="
-		msg_info "Node Sequence: We start building the \"${i}\"th farmer"
-		msg_info "Node Name: ${node_name}"
-		msg_info "Node Path: ${node_path}"
+		msg_debug "=================farmer upgrading==================="
+		msg_info "Node Sequence: We start upgrading the \"${i}\"th farmer"
+		msg_info "Node Name[upgrade]: ${node_name}"
+		msg_info "Node Path[upgrade]: ${node_path}"
 
 		# Judging whether the directory exists,
 		# the existence of the directory indicates that the node is already running, and then exits.
@@ -506,21 +506,21 @@ upgrade_all_framer() {
 			msg_error "The port exists, the port is incremented by one"
 			node_port=$(($node_port + 1))
 		done
-		msg_info "Node Port: $node_port"
+		msg_info "Node Port[upgrade]: $node_port"
 
 		while [ $(check_port $farmer_port) -ne 0 ]; do
 			msg_error "The port exists, the port is incremented by one"
 			node_port=$(($node_port + 1))
 		done
-		msg_info "Farmer Port: $farmer_port"
+		msg_info "Farmer Port[upgrade]: $farmer_port"
 
-		msg_info "Image Node: $IMAGE_NODE"
-		msg_info "Image Node: $IMAGE_FARMER"
-		msg_info "Plot Size: $PLOT_SIZE"
+		msg_info "Image Node[upgrade]: $IMAGE_NODE"
+		msg_info "Image Node[upgrade]: $IMAGE_FARMER"
+		msg_info "Plot Size[upgrade]: $PLOT_SIZE"
 		address=${ADDRESS[$i - 1]}
-		msg_info "Address: $address"
+		msg_info "Address[upgrade]: $address"
 		upgrade_farmer $node_path $node_name $node_port $farmer_port $address
-		msg_success "Farmer${i} has been successfully built ！！！"
+		msg_success "Farmer${i} has been successfully upgrade ！！！"
 	done
 }
 
