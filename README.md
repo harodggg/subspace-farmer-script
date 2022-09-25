@@ -20,14 +20,20 @@ A very simple script to automatically configure farmer using the docker-compose 
 ```
 <img width="1280" alt="image" src="https://user-images.githubusercontent.com/31732456/192086069-4b17902f-2597-4ac3-b58a-925cb0a2d4a9.png">
 
-## Upgrade Farmer(.etc)
+## Upgrade Farmer
 ```bash 
     ./run-farmer upgrade
 ```
-## Delete Farmer(.etc)
+## Delete Farmer
 ```bash 
     ./run-farmer delete
 ```
+
+## Stop Farmer
+```bash 
+    ./run-farmer stop
+```
+
 
 
 
