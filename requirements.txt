@@ -1,8 +1,9 @@
+python_version >= "3"
 base58==2.1.1
 bip39==0.0.2
 certifi==2022.9.24
 cffi==1.15.1
-charset-normalizer==2.1.1
+charset-normalizer~=2.0.0
 colorama==0.4.5
 cython==0.29.32
 cytoolz==0.12.0
