@@ -7,7 +7,7 @@ A very simple script to automatically configure farmer using the docker-compose 
 # 1. Using generate-key and query-balance
 ## 1.1 Install Python3 Package
 ```bash
-pip3 install -r requirements.txt
+python3 -m pip install -r requirements.txt 
 ```
 # 2. Using run-farmer
 ## 2.1 Init Env
