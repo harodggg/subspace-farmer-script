@@ -840,9 +840,9 @@ create_only_farmer() {
 	yq -i '.services.farmer.ports[0]=env(farmer_port)' $1/docker-compose.yaml
 	unset farmer_port
 
-	export node_rpc=$5
-	yq -i '.services.farmer.command[4]=env(node_rpc)'  $1/docker-compose.yaml
-	unset node_rpc
+	export rpc=$5
+	yq -i '.services.farmer.command[4]=env(rpc)'  $1/docker-compose.yaml
+	unset rpc
 
 	cd $1
 
