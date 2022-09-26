@@ -4,13 +4,14 @@
         "address2",
         "address3"
     ],
-    "node-rpc": "",
+    "node_rpc": "ws://0.0.0.0:9945",
+    "node_name": "only-farmer",
     "node_num": 1,
     "farmer_available_port": [
         45000,
         50000
     ],
-    "plot_size": "30G",
+    "plot_size": "10G",
     "farmer_name": "only-farmer",
     "farmer_image": "ghcr.io/subspace/farmer:gemini-2a-2022-sep-10"
 }

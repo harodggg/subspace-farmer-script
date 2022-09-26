@@ -19,6 +19,7 @@ FARMER_DIR=""
 PLOT_SIZE=""
 NODE_NAME=""
 NODE_NUM=""
+NODE_RPC=""
 
 ADDRESS=()
 NODE_AVAILABLE_PORT=()
@@ -342,11 +343,13 @@ read_farmer_config() {
 
 	#echo $FARMER_AVAILABLE_PORT
 	NODE_NAME=$(jq -rc .node_name $*)
-	#echo $NODE_NAME
+	echo $NODE_NAME
 	IMAGE_FARMER=$(jq -rc .farmer_image $*)
 	#echo $IMAGE_FARMER
 	#IMAGE_NODE=$(jq -rc .node_image $*)
 	#echo $IMAGE_NODE
+	NODE_RPC=$(jq -rc .node_rpc $*)
+	echo $NODE_RPC
 	#show_config
 }
 
@@ -526,9 +529,9 @@ upgrade_all_framer() {
 	parent_path=$(get_parent_dir)
 	dir_name=""
 	node_num=1
-	stop_all_farmer
+	stop_all_farmer $1 $2
 	msg_info "Config: Reading config.json"
-	read_config $(get_current_dir)/config.json
+	"$2" $(get_current_dir)/$1
 	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
 
 	msg_info "Building: Start upgrading node"
@@ -829,13 +832,17 @@ create_only_farmer() {
 	yq -i '.services.farmer.command[-1]=env(plot_size)' $1/docker-compose.yaml
 	unset plot_size
 
-	export address=$5
+	export address=$4
 	yq -i '.services.farmer.command[-3]=env(address)' $1/docker-compose.yaml
 	unset address
 
-	export farmer_port="0.0.0.0:$4:40333"
+	export farmer_port="0.0.0.0:$3:40333"
 	yq -i '.services.farmer.ports[0]=env(farmer_port)' $1/docker-compose.yaml
 	unset farmer_port
+
+	export node_rpc=$5
+	yq -i '.services.farmer.command[4]=env(node_rpc)'  $1/docker-compose.yaml
+	unset node_rpc
 
 	cd $1
 
@@ -853,8 +860,10 @@ create_only_farmers() {
 	parent_path=$(get_parent_dir)
 	dir_name=""
 	node_num=1
+	node_rpc=""
+	node_name=""
 	msg_info "Config: Reading farmer.json"
-	read_config $(get_current_dir)/farmer.json
+	read_farmer_config $(get_current_dir)/farmer.json
 	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/farmer.json\""
 
 	msg_info "Building: Start building a farmer"
@@ -864,20 +873,19 @@ create_only_farmers() {
 	msg_info "Base Node Name: \"${NODE_NAME}\""
 
 	msg_info "Base Dir: \"${parent_path}\""
-	base_node_port=${NODE_AVAILABLE_PORT[0]}
-	msg_info "Base Node Port: \"${base_node_port}\""
+	
 
 	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
 	msg_info "Base Node Port: \"${base_farmer_port}\""
+	node_rpc=${NODE_RPC}
+	msg_info "Base RPC Port: \"${node_rpc}\""
 
 	for ((i = 1; i <= ${node_num}; i++)); do
 		node_name=$NODE_NAME${i}
-		node_port=$((i + base_node_port))
 		farmer_port=$((i + base_farmer_port))
 		node_path=${parent_path}/${node_name}
 		msg_debug "=================farmer building==================="
 		msg_info "Node Sequence-->[build]: We start building the farmer-[$i]"
-		msg_info "Node Name-->[build]: ${node_name}"
 		msg_info "Node Path-->[build]: ${node_path}"
 
 		# Judging whether the directory exists,
@@ -896,24 +904,18 @@ create_only_farmers() {
 			continue
 		fi
 
-		while [ $(check_port $node_port) -ne 0 ]; do
-			msg_error "The port exists, the port is incremented by one"
-			node_port=$(($node_port + 1))
-		done
-		msg_info "Node Port-->[build]: $node_port"
-
 		while [ $(check_port $farmer_port) -ne 0 ]; do
 			msg_error "The port exists, the port is incremented by one"
 			node_port=$(($node_port + 1))
 		done
 		msg_info "Farmer Port-->[build]: $farmer_port"
+		msg_info "Node Rpc-->[build]: $node_rpc"
 
-		msg_info "Image Node-->[build]: $IMAGE_NODE"
 		msg_info "Image Node-->[build]: $IMAGE_FARMER"
 		msg_info "Plot Size-->[build]: $PLOT_SIZE"
 		address=${ADDRESS[$i - 1]}
 		msg_info "Address: $address"
-		create_only_farmer $node_path $node_name $node_port $farmer_port $address
+		create_only_farmer $node_path $node_name $farmer_port $address $node_rpc
 		msg_success "Farmer-[${i}] has been successfully built ！！！"
 	done
 
@@ -985,6 +987,7 @@ parse_args() {
 				case $2 in
 				"only-farmer")
 					print_script_name
+					delete_all_farmer farmer.json read_farmer_config
 					exit 0
 					;;
 				"only-node")
@@ -999,9 +1002,23 @@ parse_args() {
 			delete_all_farmer config.json read_config
 			;;
 		"upgrade")
+			if [ $# -eq 2 ]; then
+				case $2 in
+				"only-farmer")
+					print_script_name
+					upgrade_all_farmer farmer.json read_farmer_config
+					exit 0
+					;;
+				"only-node")
+					print_script_name
+					upgrade_all_farmer node.json read_node_config
+					exit 0
+					;;
+				esac
+			fi
 			print_script_name
 			msg_info "Upgrade: We will Upgrade one or more farmer nodes according to the config configuration."
-			upgrade_all_framer
+			upgrade_all_framer config.json read_config
 			;;
 		*)
 			echo "fatal"
