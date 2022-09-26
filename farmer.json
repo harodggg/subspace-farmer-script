@@ -5,7 +5,7 @@
         "address3"
     ],
     "node-rpc": "",
-    "farmer_num": 1,
+    "node_num": 1,
     "farmer_available_port": [
         45000,
         50000

@@ -5,5 +5,9 @@
         40000
     ],
     "node_name": "only-node",
-    "node_image": "ghcr.io/subspace/node:gemini-2a-2022-sep-10"
+    "node_image": "ghcr.io/subspace/node:gemini-2a-2022-sep-10",
+    "rpc_available_port":[
+        9944,
+        15000
+    ]
 }

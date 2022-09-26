@@ -18,11 +18,12 @@ IMAGE_FARMER=""
 FARMER_DIR=""
 PLOT_SIZE=""
 NODE_NAME=""
-FARMER_NUM=""
+NODE_NUM=""
 
 ADDRESS=()
 NODE_AVAILABLE_PORT=()
 FARMER_AVAILABLE_PORT=()
+RPC_AVAILABLE_PORT=()
 
 ### Check Funcions
 check_info() {
@@ -263,8 +264,8 @@ read_config() {
 	#ADDRESS=$(jq -rc .address[0] $*)
 	#echo $ADDRESS
 	#echo $ADDRESS
-	FARMER_NUM=$(jq -rc .farmer_num $*)
-	for ((i = 0; i < ${FARMER_NUM}; i++)); do
+	NODE_NUM=$(jq -rc .node_num $*)
+	for ((i = 0; i < ${NODE_NUM}; i++)); do
 		ADDRESS[$i]=$(jq -rc .address[$i] $*)
 		#echo ${ADDRESS[$i]}
 	done
@@ -304,6 +305,8 @@ read_node_config() {
 	NODE_AVAILABLE_PORT[1]=$(jq -rc .node_available_port[1] $*)
 	#echo $NODE_AVAILABLE_PORT
 
+	RPC_AVAILABLE_PORT[0]=$(jq -rc .rpc_available_port[0] $*)
+	RPC_AVAILABLE_PORT[1]=$(jq -rc .rpc_available_port[1] $*)
 	#FARMER_AVAILABLE_PORT[0]=$(jq -rc .farmer_available_port[0] $*)
 	#FARMER_AVAILABLE_PORT[1]=$(jq -rc .farmer_available_port[1] $*)
 
@@ -315,14 +318,15 @@ read_node_config() {
 	IMAGE_NODE=$(jq -rc .node_image $*)
 	#echo $IMAGE_NODE
 	#show_config
+	NODE_NUM=$(jq -rc .node_num $*)
 }
 
 read_farmer_config() {
 	#ADDRESS=$(jq -rc .address[0] $*)
 	#echo $ADDRESS
 	#echo $ADDRESS
-	FARMER_NUM=$(jq -rc .farmer_num $*)
-	for ((i = 0; i < ${FARMER_NUM}; i++)); do
+	NODE_NUM=$(jq -rc .node_num $*)
+	for ((i = 0; i < ${NODE_NUM}; i++)); do
 		ADDRESS[$i]=$(jq -rc .address[$i] $*)
 		#echo ${ADDRESS[$i]}
 	done
@@ -486,16 +490,15 @@ stop_all_farmer() {
 	base_node_port=30000
 	base_farmer_port=40000
 	parent_path=$(get_parent_dir)
-	dir_name=""
-	farmer_num=1
-	msg_info "Config: Reading config.json"
-	read_config $(get_current_dir)/config.json
-	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
+	node_num=1
+	msg_info "Config: Reading $1"
+	"$2" $(get_current_dir)/$1
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/$1\""
 
 	msg_info "Stopping: Start stopping all node"
-	farmer_num=$FARMER_NUM
+	node_num=$NODE_NUM
 
-	for ((i = 1; i <= ${farmer_num}; i++)); do
+	for ((i = 1; i <= ${node_num}; i++)); do
 		node_name=$NODE_NAME${i}
 		node_path=${parent_path}/${node_name}
 		msg_debug "=================farmer stopping==================="
@@ -522,15 +525,15 @@ upgrade_all_framer() {
 	base_farmer_port=40000
 	parent_path=$(get_parent_dir)
 	dir_name=""
-	farmer_num=1
+	node_num=1
 	stop_all_farmer
 	msg_info "Config: Reading config.json"
 	read_config $(get_current_dir)/config.json
 	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
 
 	msg_info "Building: Start upgrading node"
-	farmer_num=$FARMER_NUM
-	msg_info "Farmer Num: We will upgrading \"${farmer_num}\" farmer/farmers"
+	node_num=$NODE_NUM
+	msg_info "Farmer Num: We will upgrading \"${node_num}\" farmer/farmers"
 
 	msg_info "Base Node Name: \"${NODE_NAME}\""
 
@@ -541,7 +544,7 @@ upgrade_all_framer() {
 	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
 	msg_info "Base Node Port: \"${base_farmer_port}\""
 
-	for ((i = 1; i <= ${farmer_num}; i++)); do
+	for ((i = 1; i <= ${node_num}; i++)); do
 		node_name=$NODE_NAME${i}
 		node_port=$((i + base_node_port))
 		farmer_port=$((i + base_farmer_port))
@@ -595,15 +598,15 @@ delete_all_farmer() {
 	base_farmer_port=40000
 	parent_path=$(get_parent_dir)
 	dir_name=""
-	farmer_num=1
-	msg_info "Config: Reading config.json"
-	read_config $(get_current_dir)/config.json
-	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
+	node_num=1
+	msg_info "Config: Reading $1"
+	"$2" $(get_current_dir)/$1
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/$1\""
 
 	msg_info "Delete: Start deleting all node"
-	farmer_num=$FARMER_NUM
+	node_num=$NODE_NUM
 
-	for ((i = 1; i <= ${farmer_num}; i++)); do
+	for ((i = 1; i <= ${node_num}; i++)); do
 		node_name=$NODE_NAME${i}
 		node_path=${parent_path}/${node_name}
 		msg_debug "=================farmer Delete==================="
@@ -614,7 +617,7 @@ delete_all_farmer() {
 			work_dir=$(pwd)
 
 			cd ${parent_path}/${node_name}
-			sudo docker-compose stop
+			sudo docker-compose stop || true
 			rm -rf ${parent_path}/${node_name}
 			msg_success "...-->[detele]:We have successfully deleted $node_path"
 			cd $work_dir
@@ -629,14 +632,14 @@ create_many_farmer() {
 	base_farmer_port=40000
 	parent_path=$(get_parent_dir)
 	dir_name=""
-	farmer_num=1
+	node_num=1
 	msg_info "Config: Reading config.json"
 	read_config $(get_current_dir)/config.json
 	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/config.json\""
 
 	msg_info "Building: Start building a node"
-	farmer_num=$FARMER_NUM
-	msg_info "Farmer Num: We will building \"${farmer_num}\" farmer/farmers"
+	node_num=$NODE_NUM
+	msg_info "Farmer Num: We will building \"${node_num}\" farmer/farmers"
 
 	msg_info "Base Node Name: \"${NODE_NAME}\""
 
@@ -647,7 +650,7 @@ create_many_farmer() {
 	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
 	msg_info "Base Node Port: \"${base_farmer_port}\""
 
-	for ((i = 1; i <= ${farmer_num}; i++)); do
+	for ((i = 1; i <= ${node_num}; i++)); do
 		node_name=$NODE_NAME${i}
 		node_port=$((i + base_node_port))
 		farmer_port=$((i + base_farmer_port))
@@ -704,7 +707,7 @@ create_only_node() {
 	mkdir $1
 
 	#echo $(pwd)/docker-compose.yaml
-	cp $(pwd)/docker-compose.yaml $1
+	cp $(pwd)/node.yaml $1/docker-compose.yaml
 
 	sleep 0.5
 
@@ -724,6 +727,10 @@ create_only_node() {
 	yq -i '.services.node.ports[0]=env(node_port)' $1/docker-compose.yaml
 	unset node_port
 
+	export rpc_port="0.0.0.0:$4:9944"
+	yq -i '.services.node.ports[1]=env(rpc_port)' $1/docker-compose.yaml
+	unset rpc_port
+
 	cd $1
 
 	sudo docker-compose up -d || true
@@ -736,12 +743,12 @@ create_only_node() {
 create_only_nodes() {
 	plat_size="30G"
 	base_node_port=35000
-	base_farmer_port=40000
+	base_rpc_port=9944
 	parent_path=$(get_parent_dir)
 	dir_name=""
-	farmer_num=1
+	node_num=1
 	msg_info "Config: Reading node.json"
-	read_config $(get_current_dir)/node.json
+	read_node_config $(get_current_dir)/node.json
 	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/node.json\""
 
 	msg_info "Building--<only-node>: Start building a node"
@@ -754,11 +761,16 @@ create_only_nodes() {
 	base_node_port=${NODE_AVAILABLE_PORT[0]}
 	msg_info "Base Node Port: \"${base_node_port}\""
 
+	rpc_node_port=${RPC_AVAILABLE_PORT[0]}
+	msg_info "Base Node Port: \"${rpc_node_port}\""
+
+
 	for ((i = 1; i <= ${node_num}; i++)); do
 		node_name=$NODE_NAME${i}
 		node_port=$((i + base_node_port))
+		rpc_port=$((i + base_rpc_port))
 		node_path=${parent_path}/${node_name}
-		msg_debug "=================Only node building==================="
+		msg_debug "=================Only Node building==================="
 		msg_info "Node Sequence-->[build]: We start building the node-[$i]"
 		msg_info "Node Name-->[build]: ${node_name}"
 		msg_info "Node Path-->[build]: ${node_path}"
@@ -779,13 +791,15 @@ create_only_nodes() {
 			continue
 		fi
 
-		while [ $(check_port $node_port) -ne 0 ]; do
-			msg_error "The port exists, the port is incremented by one"
-			node_port=$(($node_port + 1))
+		while [ $(check_port $rpc_port) -ne 0 ]; do
+			msg_error "The port exists, the rpc port is incremented by one"
+			rpc_port=$(($rpc_port + 1))
 		done
+		
 		msg_info "Node Port-->[build]: $node_port"
 		msg_info "Image Node-->[build]: $IMAGE_NODE"
-		create_only_node $node_path $node_name $node_port 
+		msg_success "The ode rpc is : 0.0.0.0:$rpc_port"
+		create_only_node $node_path $node_name $node_port $rpc_port
 		msg_success "Node-[${i}] has been successfully built ！！！"
 	done
 }
@@ -838,14 +852,14 @@ create_only_farmers() {
 	base_farmer_port=40000
 	parent_path=$(get_parent_dir)
 	dir_name=""
-	farmer_num=1
+	node_num=1
 	msg_info "Config: Reading farmer.json"
 	read_config $(get_current_dir)/farmer.json
 	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/farmer.json\""
 
 	msg_info "Building: Start building a farmer"
-	farmer_num=$FARMER_NUM
-	msg_info "Farmer Num: We will building \"${farmer_num}\" farmer/farmers"
+	node_num=$NODE_NUM
+	msg_info "Farmer Num: We will building \"${node_num}\" farmer/farmers"
 
 	msg_info "Base Node Name: \"${NODE_NAME}\""
 
@@ -856,7 +870,7 @@ create_only_farmers() {
 	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
 	msg_info "Base Node Port: \"${base_farmer_port}\""
 
-	for ((i = 1; i <= ${farmer_num}; i++)); do
+	for ((i = 1; i <= ${node_num}; i++)); do
 		node_name=$NODE_NAME${i}
 		node_port=$((i + base_node_port))
 		farmer_port=$((i + base_farmer_port))
@@ -949,13 +963,40 @@ parse_args() {
 			create_many_farmer
 			;;
 		"stop")
+			if [ $# -eq 2 ]; then
+				case $2 in
+				"only-farmer")
+					print_script_name
+					stop_all_farmer farmer.json read_farmer_config
+					exit 0
+					;;
+				"only-node")
+					print_script_name
+					stop_all_farmer node.json read_node_config
+					exit 0
+					;;
+				esac
+			fi
 			print_script_name
-			stop_all_farmer
+			stop_all_farmer config.json read_config
 			;;
 		"delete")
+			if [ $# -eq 2 ]; then
+				case $2 in
+				"only-farmer")
+					print_script_name
+					exit 0
+					;;
+				"only-node")
+					print_script_name
+					delete_all_farmer node.json read_node_config
+					exit 0
+					;;
+				esac
+			fi
 			print_script_name
 			msg_info "Delete: We will delete one or more farmer nodes according to the config configuration."
-			delete_all_farmer
+			delete_all_farmer config.json read_config
 			;;
 		"upgrade")
 			print_script_name
