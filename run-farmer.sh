@@ -244,7 +244,7 @@ msg_success() {
 }
 
 msg_warn() {
-	echo_log 33 "[Warning] ====> $*"
+	echo_log 33 "[Using] ====> $*"
 }
 
 msg_info() {
