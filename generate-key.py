@@ -27,7 +27,6 @@ def main():
     print(Fore.BLUE)
     if len(argv) == 2 and float(argv[1]):
         print(Fore.GREEN)
-        print("[".format(end=""))
         for i in range(0,int(argv[1])):
             keypair = generate_address(2254)
             all_address.append(
@@ -35,8 +34,7 @@ def main():
                 "keypair":keypair
                 }
                 )
-            print("{},".format(keypair[1])) 
-        print("]")
+            print("\"{}\",".format(keypair[1])) 
         with open(generate_file_name() + ".json", 'w') as f:
             dump(all_address,f,sort_keys=True, indent=4, separators=(',', ':'))
     else: 
