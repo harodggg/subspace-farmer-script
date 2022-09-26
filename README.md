@@ -47,9 +47,11 @@ python3 -m pip install -r requirements.txt
     ./run-farmer delete [only-farmer / only-node]
 ```
 ### 2.4.1 Delete Only-Farmer
- ```bash 
+```bash 
     ./run-farmer delete only-farmer
 ```
+<img width="1310" alt="image" src="https://user-images.githubusercontent.com/31732456/192370351-862d91ce-5e10-4110-a507-b6bd1a4a2f71.png">
+
    
 ## 2.5 Stop Farmer
 ```bash 
