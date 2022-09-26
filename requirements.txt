@@ -1,4 +1,4 @@
-python_version >= "3"
+python_version>=3.10.0
 base58==2.1.1
 bip39==0.0.2
 certifi==2022.9.24
