@@ -30,6 +30,13 @@ python3 -m pip install -r requirements.txt
     ./run-farmer create [only-farmer / only-node]
 ```
 <img width="1280" alt="image" src="https://user-images.githubusercontent.com/31732456/192086069-4b17902f-2597-4ac3-b58a-925cb0a2d4a9.png">
+### 2.2.1 create only farmer
+```bash 
+  ./run-farmer create only-farmer
+```
+<img width="982" alt="image" src="https://user-images.githubusercontent.com/31732456/192369967-166876e3-bf37-421e-849f-51a95da1cc0b.png">
+
+
 
 ## 2.3 Upgrade Farmer
 ```bash 
@@ -37,9 +44,13 @@ python3 -m pip install -r requirements.txt
 ```
 ## 2.4 Delete Farmer
 ```bash 
-    ./run-farmer delete [only-farmer / only,-node]
+    ./run-farmer delete [only-farmer / only-node]
 ```
-
+### 2.4.1 Delete Only-Farmer
+ ```bash 
+    ./run-farmer delete only-farmer
+```
+   
 ## 2.5 Stop Farmer
 ```bash 
     ./run-farmer stop [only-farmer / only-node]
