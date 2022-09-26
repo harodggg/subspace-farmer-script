@@ -4,7 +4,7 @@
         "address2",
         "address3"
     ],
-    "node_rpc": "ws://0.0.0.0:9945",
+    "node_rpc": "ws://public:9945",
     "node_name": "only-farmer",
     "node_num": 1,
     "farmer_available_port": [

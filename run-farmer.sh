@@ -884,6 +884,8 @@ create_only_farmers() {
 		node_name=$NODE_NAME${i}
 		farmer_port=$((i + base_farmer_port))
 		node_path=${parent_path}/${node_name}
+		node_rpc=$NODE_RPC
+	
 		msg_debug "=================farmer building==================="
 		msg_info "Node Sequence-->[build]: We start building the farmer-[$i]"
 		msg_info "Node Path-->[build]: ${node_path}"
