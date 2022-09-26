@@ -20,22 +20,22 @@ pip3 install -r requirements.txt
 
 ## 2.2 Create Farmer
 ```bash 
-    ./run-farmer create
+    ./run-farmer create [only-farmer / only-node]
 ```
 <img width="1280" alt="image" src="https://user-images.githubusercontent.com/31732456/192086069-4b17902f-2597-4ac3-b58a-925cb0a2d4a9.png">
 
 ## 2.3 Upgrade Farmer
 ```bash 
-    ./run-farmer upgrade
+    ./run-farmer upgrade [only-farmer / only-node]
 ```
 ## 2.4 Delete Farmer
 ```bash 
-    ./run-farmer delete
+    ./run-farmer delete [only-farmer / only,-node]
 ```
 
 ## 2.5 Stop Farmer
 ```bash 
-    ./run-farmer stop
+    ./run-farmer stop [only-farmer / only-node]
 ```
 
 
