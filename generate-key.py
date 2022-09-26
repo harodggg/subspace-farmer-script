@@ -43,8 +43,6 @@ def main():
         print("Usage: {} options (num)".format(basename(argv[0])))
     print (Style.RESET_ALL)
 
-
-
 main()
 
 

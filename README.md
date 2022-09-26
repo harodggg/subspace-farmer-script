@@ -4,8 +4,12 @@ A very simple script to automatically configure farmer using the docker-compose 
 
 # Only supports ubuntu 20.04 lts
 
-# Using
-
+# 1. Using generate-key and query-balance
+## Install Python3 Package
+```bash
+pip3 install -r requirements.txt
+```
+# 2. Using run-farmer
 ## Init Env
 
 ```bash 
