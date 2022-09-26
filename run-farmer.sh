@@ -730,9 +730,9 @@ create_only_node() {
 	yq -i '.services.node.ports[0]=env(node_port)' $1/docker-compose.yaml
 	unset node_port
 
-	export rpc_port="0.0.0.0:$4:9944"
-	yq -i '.services.node.ports[1]=env(rpc_port)' $1/docker-compose.yaml
-	unset rpc_port
+	export rpc="0.0.0.0:$4:9944"
+	yq -i '.services.node.ports[1]=env(rpc)' $1/docker-compose.yaml
+	unset rpc
 
 	cd $1
 
