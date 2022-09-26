@@ -14,7 +14,7 @@ eth-typing==3.2.0
 eth-utils==2.0.0
 idna==3.4
 more-itertools==8.14.0
-protobuf>=4.21.0
+protobuf>=4.21.1
 py-bip39-bindings==0.1.10
 py-ed25519-zebra-bindings==1.0.1
 py-sr25519-bindings==0.1.5
