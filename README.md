@@ -6,6 +6,10 @@ A very simple script to automatically configure farmer using the docker-compose 
 
 # 1. Using generate-key and query-balance
 ## 1.1 Install Python3 Package
+ sudo  apt-get -y install python3-venv
+ sudo apt-get install build-essential python3-dev libssl-dev libffi-dev libxml2 libxml2-dev libxslt1-dev zlib1g-dev
+
+
 ```bash
 python3 -m pip install -r requirements.txt 
 ```
