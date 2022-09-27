@@ -15,11 +15,11 @@ sudo apt-get install build-essential python3-dev libssl-dev libffi-dev libxml2 l
 ### Using Python Version >= 3.8
 
 ```bash
-python3.8 -m pip install upgrade pip  or pip3.8 install upgrade pip
+python3.8 -m pip install upgrade pip  or pip3 install upgrade pip
 ```
 
 ```bash
-python3 -m pip install -r requirements.txt
+python3.8 -m pip install -r requirements.txt
 ```
 
 # 2. Using run-farmer
