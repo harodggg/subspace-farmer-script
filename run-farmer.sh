@@ -43,6 +43,19 @@ check_docker() {
 	# version_docker=$(docker --version | awk '{split($0,a,","); print a[1]}' | sed "s/Docker version //g")
 }
 
+check_only_farmer_network() {
+	num=$(sudo docker network ls | grep farmer-network | wc -l)
+	if [ $num -eq 0 ]; then
+		msg_error "No Exist: farmer-network"
+		network_id=sudo docker network create farmer-network
+		msg_info "Starting building farmer-network"
+		msg_success "new farmer-network is $network_id"
+
+	else
+		msg_success "Exist: farmer-network"
+	fi
+}
+
 check_docker_compose() {
 	num=$(is_package_exist docker-compose)
 	if [ $num -eq 0 ]; then
@@ -353,10 +366,6 @@ read_farmer_config() {
 	echo $NODE_RPC
 	#show_config
 }
-
-
-
-
 
 show_config() {
 	echo address: $ADDRESS
@@ -703,7 +712,7 @@ create_many_farmer() {
 
 }
 
-create_only_node() { 
+create_only_node() {
 	#echo $PLOT_SIZE
 	work_dir=$(pwd)
 	#echo $work_dir
@@ -768,7 +777,6 @@ create_only_nodes() {
 	rpc_node_port=${RPC_AVAILABLE_PORT[0]}
 	msg_info "Base Node Port: \"${rpc_node_port}\""
 
-
 	for ((i = 1; i <= ${node_num}; i++)); do
 		node_name=$NODE_NAME${i}
 		node_port=$((i + base_node_port))
@@ -799,7 +807,7 @@ create_only_nodes() {
 			msg_error "The port exists, the rpc port is incremented by one"
 			rpc_port=$(($rpc_port + 1))
 		done
-		
+
 		msg_info "Node Port-->[build]: $node_port"
 		msg_info "Image Node-->[build]: $IMAGE_NODE"
 		msg_success "The ode rpc is : 0.0.0.0:$rpc_port"
@@ -807,7 +815,6 @@ create_only_nodes() {
 		msg_success "Node-[${i}] has been successfully built ！！！"
 	done
 }
-
 
 create_only_farmer() {
 	#echo $PLOT_SIZE
@@ -842,7 +849,7 @@ create_only_farmer() {
 	unset farmer_port
 
 	export rpc=$5
-	yq -i '.services.farmer.command[4]=env(rpc)'  $1/docker-compose.yaml
+	yq -i '.services.farmer.command[4]=env(rpc)' $1/docker-compose.yaml
 	unset rpc
 
 	cd $1
@@ -874,7 +881,6 @@ create_only_farmers() {
 	msg_info "Base Node Name: \"${NODE_NAME}\""
 
 	msg_info "Base Dir: \"${parent_path}\""
-	
 
 	base_farmer_port=${FARMER_AVAILABLE_PORT[0]}
 	msg_info "Base Node Port: \"${base_farmer_port}\""
@@ -952,6 +958,7 @@ parse_args() {
 				case $2 in
 				"only-farmer")
 					print_script_name
+					check_only_farmer_network
 					create_only_farmers
 					exit 0
 					;;

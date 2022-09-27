@@ -28,7 +28,6 @@ services:
     healthcheck:
       timeout: 5s
       interval: 30s
-      retries: 5ƒ
     networks:
       - farmer-network
 
