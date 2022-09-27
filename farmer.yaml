@@ -5,32 +5,36 @@ services:
     privileged: true
     user: root
     volumes:
-# Instead of specifying volume (which will store data in `/var/lib/docker`), you can
-# alternatively specify path to the directory where files will be stored, just make
-# sure everyone is allowed to write there
       - farmer-data:/var/subspace:rw
-#      - /path/to/subspace-farmer:/var/subspace:rw
     ports:
-# Un-comment following line to unlock farmer's RPC
-#      - "127.0.0.1:9955:9955"
-# If port 40333 is already occupied by something else, replace all
-# occurrences of `40333` in this file with another value
       - "0.0.0.0:40333:40333"
     restart: unless-stopped
-    command: [
-      "--base-path", "/var/subspace",
-      "farm",
-      "--node-rpc-url", "ws://node:9944",
-      "--ws-server-listen-addr", "0.0.0.0:9955",
-      "--listen-on", "/ip4/0.0.0.0/tcp/40333",
-# Replace `WALLET_ADDRESS` with your Polkadot.js wallet address
-      "--reward-address", "5DZhS5gUCDYUn1m5tKp3X2sBZcEJfSCfXtcxUvXMft4Gwqpa",
-      "--plot-size", "30G"
-    ]
+    command:
+      [
+        "--base-path",
+        "/var/subspace",
+        "farm",
+        "--node-rpc-url",
+        "ws://node:9944",
+        "--ws-server-listen-addr",
+        "0.0.0.0:9955",
+        "--listen-on",
+        "/ip4/0.0.0.0/tcp/40333",
+        "--reward-address",
+        "5DZhS5gUCDYUn1m5tKp3X2sBZcEJfSCfXtcxUvXMft4Gwqpa",
+        "--plot-size",
+        "30G",
+      ]
     healthcheck:
       timeout: 5s
-# If node setup takes longer then expected, you want to increase `interval` and `retries` number.
       interval: 30s
-      retries: 5
+      retries: 5ƒ
+    networks:
+      - farmer-network
+
+networks:
+  farmer-network:
+    external: true
+
 volumes:
   farmer-data:

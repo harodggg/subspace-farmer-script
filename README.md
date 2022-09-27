@@ -32,6 +32,9 @@ python3 -m pip install -r requirements.txt
 
 ### 2.2.1 create only farmer
 ```bash 
+    docker network create farmer-network
+```
+```bash 
   ./run-farmer create only-farmer
 ```
 <img width="982" alt="image" src="https://user-images.githubusercontent.com/31732456/192369967-166876e3-bf37-421e-849f-51a95da1cc0b.png">

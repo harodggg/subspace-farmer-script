@@ -1,46 +1,39 @@
 version: "3.7"
 services:
   node:
-    # Replace `snapshot-DATE` with latest release (like `snapshot-2022-apr-29`)
-    # For running on Aarch64 add `-aarch64` after `DATE`
     image: ghcr.io/subspace/node:gemini-2a-2022-sep-10
     volumes:
-# Instead of specifying volume (which will store data in `/var/lib/docker`), you can
-# alternatively specify path to the directory where files will be stored, just make
-# sure everyone is allowed to write there
       - node-data:/var/subspace:rw
-#      - /path/to/subspace-node:/var/subspace:rw
     privileged: true
     user: root
     ports:
-# If port 30333 is already occupied by another Substrate-based node, replace all
-# occurrences of `30333` in this file with another value
       - "0.0.0.0:30333:30333"
       - "0.0.0.0:9945:9944"
 
     restart: unless-stopped
-    command: [
-      "--chain", "gemini-2a",
-      "--base-path", "/var/subspace",
-      "--execution", "wasm",
-      "--state-pruning", "1024",
-      "--keep-blocks","1024",
-      "--port", "30333",
-      "--rpc-cors", "all",
-      "--rpc-methods", "unsafe",
-      "--in-peers", "1000",
-      "--unsafe-ws-external",
-      "--validator",
-# Replace `INSERT_YOUR_ID` with your node ID (will be shown in telemetry)
-      "--name", "g_xbt-1"
-    ]
-    healthcheck:
-      timeout: 5s
-# If node setup takes longer then expected, you want to increase `interval` and `retries` number.
-      interval: 30s
-      retries: 5
+    command:
+      [
+        "--chain",
+        "gemini-2a",
+        "--base-path",
+        "/var/subspace",
+        "--execution",
+        "wasm",
+        "--state-pruning",
+        "1024",
+        "--keep-blocks",
+        "1024",
+        "--port",
+        "30333",
+        "--rpc-cors",
+        "all",
+        "--rpc-methods",
+        "unsafe",
+        "--unsafe-ws-external",
+        "--validator",
+        "--name",
+        "g_xbt-1",
+      ]
 
 volumes:
-      node-data:
-
-
+  node-data:

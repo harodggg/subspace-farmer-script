@@ -30,6 +30,7 @@ RPC_AVAILABLE_PORT=()
 check_info() {
 	echo "Does $* exist ?"
 }
+
 check_docker() {
 	num=$(is_package_exist docker)
 	if [ $num -eq 0 ]; then
