@@ -237,7 +237,7 @@ get_parent_dir() {
 }
 
 usage() {
-	echo "Usage: $(basename $0) options (init | create [only-farmer] | stop | detele | upgrade)"
+	echo "Usage: $(basename $0) options (init | create [only-farmer] | swarm [create | delete | upgrade] | stop | detele | upgrade)"
 }
 
 ### Log Functions
