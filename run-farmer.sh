@@ -973,6 +973,23 @@ parse_args() {
 			msg_info "Create: We will create one or more farmer nodes according to the config configuration."
 			create_many_farmer
 			;;
+		"swarm")
+			if [ $# -eq 2 ]; then
+				case $2 in
+				"create")
+					print_script_name
+					exit 0
+					;;
+				"upgrade")
+					print_script_name
+					exit 0
+					;;
+				esac
+			fi
+			print_script_name
+			msg_info "Create: We will create one or more farmer nodes according to the config configuration."
+			create_many_farmer
+			;;
 		"stop")
 			if [ $# -eq 2 ]; then
 				case $2 in
