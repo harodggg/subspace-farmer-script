@@ -902,10 +902,6 @@ create_swarm() {
 	yq -i '.services.farmer.image=env(SFI)' $1/docker-compose.yaml
 	unset SFI
 
-	export farmer_path=$1:/var/subspace:rw
-	yq -i '.services.farmer.volumes[0]=env(farmer_path)' $1/docker-compose.yaml
-	unset farmer_path
-
 	export plot_size=$PLOT_SIZE
 	yq -i '.services.farmer.command[-1]=env(plot_size)' $1/docker-compose.yaml
 	unset plot_size
@@ -920,10 +916,41 @@ create_swarm() {
 
 	cd $1
 
-	sudo docker stack deploy -c $1/docker-compose.yaml ${pwd} || true
+	sudo docker stack deploy -c $1/docker-compose.yaml $(pwd) || true
 
 	cd $work_dir
 	#echo $(pwd)
+}
+
+delete_swarm() {
+	plat_size="30G"
+	parent_path=$(get_parent_dir)
+	node_num=1
+	node_rpc=""
+	node_name=""
+	msg_info "Config: Reading swarm.json"
+	read_swarm_config $(get_current_dir)/swarm.json
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/swarm.json\""
+
+	for ((i = 1; i <= ${node_num}; i++)); do
+		node_name=$NODE_NAME${i}
+		node_path=${parent_path}/${node_name}
+
+		msg_debug "=================farmer building==================="
+		msg_info "Node Sequence-->[build]: We start building the farmer-[$i]"
+		msg_info "Node Path-->[build]: ${node_path}"
+
+		if [ -d "${parent_path}/${node_name}" ]; then
+			work_dir=$(pwd)
+
+			cd ${parent_path}/${node_name}
+			sudo docker stack rm ${parent_path}/${node_name} || true
+			rm -rf ${parent_path}/${node_name}
+			msg_success "...-->[detele]:We have successfully deleted $node_path"
+			cd $work_dir
+		fi
+	done
+
 }
 
 create_only_farmers() {
@@ -1034,7 +1061,7 @@ create_many_swarm() {
 		msg_info "Plot Size-->[build]: $PLOT_SIZE"
 		address=${ADDRESS[$i - 1]}
 		msg_info "Address: $address"
-		#		create_only_farmer $node_path $node_name $farmer_port $address $node_rpc
+		create_swarm $node_path $node_name $address $node_rpc
 		msg_success "Farmer-[${i}] has been successfully built ！！！"
 	done
 
@@ -1091,8 +1118,9 @@ parse_args() {
 					create_many_swarm
 					exit 0
 					;;
-				"upgrade")
+				"delete")
 					print_script_name
+					delete_swarm
 					exit 0
 					;;
 				esac
