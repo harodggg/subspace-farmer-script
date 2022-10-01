@@ -916,7 +916,7 @@ create_swarm() {
 
 	cd $1
 
-	sudo docker stack deploy -c $1/docker-compose.yaml $(pwd) || true
+	sudo docker stack deploy -c docker-compose.yaml $2 || true
 
 	cd $work_dir
 	#echo $(pwd)
