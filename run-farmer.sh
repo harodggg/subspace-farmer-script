@@ -842,6 +842,11 @@ create_only_nodes() {
 }
 
 create_only_farmer() {
+	echo $1
+	echo $2
+	echo $3
+	echo $4
+	echo $5
 	#echo $PLOT_SIZE
 	work_dir=$(pwd)
 	#echo $work_dir
@@ -873,7 +878,7 @@ create_only_farmer() {
 	yq -i '.services.farmer.ports[0]=env(farmer_port)' $1/docker-compose.yaml
 	unset farmer_port
 
-	export rpc=$5
+	export rpc=$4
 	yq -i '.services.farmer.command[4]=env(rpc)' $1/docker-compose.yaml
 	unset rpc
 
@@ -981,7 +986,7 @@ create_only_farmers() {
 
 	for ((i = 1; i <= ${node_num}; i++)); do
 		node_name=$NODE_NAME${i}
-		farmer_port=$((i + base_farmer_port))
+		node_port=$((i + base_farmer_port))
 		node_path=${parent_path}/${node_name}
 
 		msg_debug "=================farmer building==================="
@@ -1004,18 +1009,18 @@ create_only_farmers() {
 			continue
 		fi
 
-		while [ $(check_port $farmer_port) -ne 0 ]; do
+		while [ $(check_port $node_port) -ne 0 ]; do
 			msg_error "The port exists, the port is incremented by one"
-			node_port=$(($node_port + 1))
+			$node_port=$(($node_port + 1))
 		done
-		msg_info "Farmer Port-->[build]: $farmer_port"
+		msg_info "Farmer Port-->[build]: $node_port"
 		msg_info "Node Rpc-->[build]: $node_rpc"
 
 		msg_info "Image Node-->[build]: $IMAGE_FARMER"
 		msg_info "Plot Size-->[build]: $PLOT_SIZE"
 		address=${ADDRESS[$i - 1]}
 		msg_info "Address: $address"
-		create_only_farmer $node_path $node_name $address $node_rpc
+		create_only_farmer $node_path $node_name $node_port $address $node_rpc
 		msg_success "Farmer-[${i}] has been successfully built ！！！"
 	done
 

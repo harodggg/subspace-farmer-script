@@ -31,6 +31,10 @@ services:
           memory: 32M
         limits:
           memory: 300M
+      placement:
+        constraints:
+          - node.labels.ssd == true
+          
 networks:
   swarm-farmer-net:
     driver: overlay
