@@ -1,0 +1,38 @@
+version: "3.3"
+services:
+  farmer:
+    image: ghcr.io/subspace/farmer:gemini-2a-2022-sep-10
+    command:
+      - --base-path
+      - /var/subspace
+      - farm
+      - --node-rpc-url
+      - ws://154.53.41.33:9945
+      - --ws-server-listen-addr
+      - 0.0.0.0:9955
+      - --listen-on
+      - /ip4/0.0.0.0/tcp/40333
+      - --reward-address
+      - 5FbJeiqfXNHshwHdpYu2qwHBcuzDAcH6actfk3dLS7autoD5
+      - --plot-size
+      - 10G
+    user: root
+    ports:
+      - :40333
+    volumes:
+      - farmer-data:/var/subspace
+    networks:
+      - swarm-farmer-net
+    logging:
+      driver: json-file
+    deploy:
+      resources:
+        reservations:
+          memory: 32M
+        limits:
+          memory: 300M
+networks:
+  swarm-farmer-net:
+    driver: overlay
+volumes:
+  farmer-data:

@@ -1,0 +1,10 @@
+{
+    "address": [
+        "address1"
+    ],
+    "node_rpc": "ws://public:9945",
+    "node_name": "sfarmer",
+    "node_num": 1,
+    "plot_size": "10G",
+    "farmer_image": "ghcr.io/subspace/farmer:gemini-2a-2022-sep-10"
+}
