@@ -935,6 +935,8 @@ delete_swarm() {
 	node_name=""
 	msg_info "Config: Reading swarm.json"
 	read_swarm_config $(get_current_dir)/swarm.json
+	node_num=$NODE_NUM
+	echo $node_num
 	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/swarm.json\""
 
 	for ((i = 1; i <= ${node_num}; i++)); do
@@ -949,7 +951,7 @@ delete_swarm() {
 			work_dir=$(pwd)
 
 			cd ${parent_path}/${node_name}
-			sudo docker stack rm ${parent_path}/${node_name} || true
+			sudo docker stack rm ${node_name} || true
 			rm -rf ${parent_path}/${node_name}
 			msg_success "...-->[detele]:We have successfully deleted $node_path"
 			cd $work_dir
