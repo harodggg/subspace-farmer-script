@@ -367,6 +367,31 @@ read_farmer_config() {
 	#show_config
 }
 
+read_swarm_config() {
+	#ADDRESS=$(jq -rc .address[0] $*)
+	#echo $ADDRESS
+	#echo $ADDRESS
+	NODE_NUM=$(jq -rc .node_num $*)
+	for ((i = 0; i < ${NODE_NUM}; i++)); do
+		ADDRESS[$i]=$(jq -rc .address[$i] $*)
+		echo ${ADDRESS[$i]}
+	done
+	#echo $FAMER_NUM
+	PLOT_SIZE=$(jq -rc .plot_size $*)
+	echo $PLOT_SIZE
+
+	NODE_NAME=$(jq -rc .node_name $*)
+	echo $NODE_NAME
+
+	IMAGE_FARMER=$(jq -rc .farmer_image $*)
+	echo $IMAGE_FARMER
+
+	NODE_RPC=$(jq -rc .node_rpc $*)
+	echo $NODE_RPC
+	#show_config
+
+}
+
 show_config() {
 	echo address: $ADDRESS
 	echo plat_size: $PLOT_SIZE
@@ -861,6 +886,46 @@ create_only_farmer() {
 
 }
 
+create_swarm() {
+	#echo $PLOT_SIZE
+	work_dir=$(pwd)
+	#echo $work_dir
+
+	mkdir $1
+
+	#echo $(pwd)/docker-compose.yaml
+	cp $(pwd)/swarm-farmer.yaml $1/docker-compose.yaml
+
+	sleep 0.5
+
+	export SFI=$IMAGE_FARMER
+	yq -i '.services.farmer.image=env(SFI)' $1/docker-compose.yaml
+	unset SFI
+
+	export farmer_path=$1:/var/subspace:rw
+	yq -i '.services.farmer.volumes[0]=env(farmer_path)' $1/docker-compose.yaml
+	unset farmer_path
+
+	export plot_size=$PLOT_SIZE
+	yq -i '.services.farmer.command[-1]=env(plot_size)' $1/docker-compose.yaml
+	unset plot_size
+
+	export address=$3
+	yq -i '.services.farmer.command[-3]=env(address)' $1/docker-compose.yaml
+	unset address
+
+	export rpc=$4
+	yq -i '.services.farmer.command[4]=env(rpc)' $1/docker-compose.yaml
+	unset rpc
+
+	cd $1
+
+	sudo docker stack deploy -c $1/docker-compose.yaml ${pwd} || true
+
+	cd $work_dir
+	#echo $(pwd)
+}
+
 create_only_farmers() {
 	plat_size="30G"
 	base_node_port=30000
@@ -923,12 +988,57 @@ create_only_farmers() {
 		msg_info "Plot Size-->[build]: $PLOT_SIZE"
 		address=${ADDRESS[$i - 1]}
 		msg_info "Address: $address"
-		create_only_farmer $node_path $node_name $farmer_port $address $node_rpc
+		create_only_farmer $node_path $node_name $address $node_rpc
 		msg_success "Farmer-[${i}] has been successfully built ！！！"
 	done
 
 }
 
+create_many_swarm() {
+	plat_size="30G"
+	parent_path=$(get_parent_dir)
+	node_num=1
+	node_rpc=""
+	node_name=""
+	msg_info "Config: Reading swarm.json"
+	read_swarm_config $(get_current_dir)/swarm.json
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/swarm.json\""
+
+	msg_info "Building: Start building a swarm farmer"
+	node_num=$NODE_NUM
+	msg_info "Farmer Num: We will building \"${node_num}\" farmer/farmers"
+
+	msg_info "Base Node Name: \"${NODE_NAME}\""
+
+	msg_info "Base Dir: \"${parent_path}\""
+
+	node_rpc=${NODE_RPC}
+	msg_info "Base RPC Port: \"${node_rpc}\""
+
+	for ((i = 1; i <= ${node_num}; i++)); do
+		node_name=$NODE_NAME${i}
+		node_path=${parent_path}/${node_name}
+
+		msg_debug "=================farmer building==================="
+		msg_info "Node Sequence-->[build]: We start building the farmer-[$i]"
+		msg_info "Node Path-->[build]: ${node_path}"
+
+		if [ -d "${parent_path}/${node_name}" ]; then
+			msg_error "Exist: "${parent_path}/${node_name}" directory already exists"
+			msg_error "Abandon the farmer operation that continues to be established, and proceed to the next farmer establishment task"
+			msg_error "${node_name} has been failed ！！！"
+			continue
+		fi
+
+		msg_info "Image Node-->[build]: $IMAGE_FARMER"
+		msg_info "Plot Size-->[build]: $PLOT_SIZE"
+		address=${ADDRESS[$i - 1]}
+		msg_info "Address: $address"
+		#		create_only_farmer $node_path $node_name $farmer_port $address $node_rpc
+		msg_success "Farmer-[${i}] has been successfully built ！！！"
+	done
+
+}
 print_script_name() {
 	echo ".______       __    __  .__   __.     _______    ___      .___  ___.  _______ .______"
 	echo "|   _  \     |  |  |  | |  \ |  |    |   ____|  /   \     |   \/   | |   ____||   _  \	     "
@@ -978,6 +1088,7 @@ parse_args() {
 				case $2 in
 				"create")
 					print_script_name
+					create_many_swarm
 					exit 0
 					;;
 				"upgrade")
@@ -987,8 +1098,6 @@ parse_args() {
 				esac
 			fi
 			print_script_name
-			msg_info "Create: We will create one or more farmer nodes according to the config configuration."
-			create_many_farmer
 			;;
 		"stop")
 			if [ $# -eq 2 ]; then
