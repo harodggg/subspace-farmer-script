@@ -34,7 +34,7 @@ def main():
         with open(argv[1],'r') as f:
             all_address = load(f)['address']
             for address in all_address:
-                all_num=all_num + int(query_balance(substrate,address))
+                all_num=all_num + float(query_balance(substrate,address))
         print("all_balances is : {} tssc".format(all_num))
     else:
         print("Usage: {} filename".format(basename(argv[0])))
