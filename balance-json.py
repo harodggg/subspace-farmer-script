@@ -10,7 +10,7 @@ substrate = SubstrateInterface(
     ss58_format=2254,
 )
 
-all_num = 0
+
 def query_balance(subsrate,address):
     result = substrate.query(
         module='System',
@@ -28,6 +28,7 @@ def query_balance(subsrate,address):
 
 
 def main():
+    all_num=0
     print(Fore.GREEN)
     if len(argv) == 2:
         with open(argv[1],'r') as f:
