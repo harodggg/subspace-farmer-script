@@ -34,7 +34,7 @@ services:
       placement:
         constraints:
           - node.labels.ssd == true
-          
+
 networks:
   swarm-farmer-net:
     driver: overlay
