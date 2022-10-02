@@ -19,7 +19,7 @@ def query_balance(subsrate,address):
     )
     balance=format((result['data']['free'].value /  10 ** substrate.token_decimals),'.4f')
     print(Fore.BLUE+"[address: {},balance: {}-{}]".format(address,balance,substrate.token_symbol))
-    return (result['data']['free'].value /  10 ** substrate.token_decimals)
+    return balance
 
 
 #address='st7mBWaPvtszhXdjfkVTXjDMFJDcmc8gvZA6gmUVeToPNnGuq'
@@ -35,7 +35,7 @@ def main():
             all_address = load(f)['address']
             for address in all_address:
                 all_num=all_num + query_balance(substrate,address)
-        print(all_num)
+        print("all_balances is : {} tssc".format(all_num))
     else:
         print("Usage: {} filename".format(basename(argv[0])))
     print (Style.RESET_ALL)
