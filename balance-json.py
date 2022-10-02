@@ -10,6 +10,7 @@ substrate = SubstrateInterface(
     ss58_format=2254,
 )
 
+all_num = 0
 def query_balance(subsrate,address):
     result = substrate.query(
         module='System',
@@ -17,6 +18,7 @@ def query_balance(subsrate,address):
         params=[address]
     )
     balance=format((result['data']['free'].value /  10 ** substrate.token_decimals),'.4f')
+    all_num = all_num + (result['data']['free'].value /  10 ** substrate.token_decimals)
     print(Fore.BLUE+"[address: {},balance: {}-{}]".format(address,balance,substrate.token_symbol))
 
 #address='st7mBWaPvtszhXdjfkVTXjDMFJDcmc8gvZA6gmUVeToPNnGuq'
@@ -31,7 +33,7 @@ def main():
             all_address = load(f)['address']
             for address in all_address:
                 query_balance(substrate,address)
-
+    print(all_num)
     else:
         print("Usage: {} filename".format(basename(argv[0])))
     print (Style.RESET_ALL)
