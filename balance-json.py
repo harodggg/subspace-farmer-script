@@ -18,8 +18,9 @@ def query_balance(subsrate,address):
         params=[address]
     )
     balance=format((result['data']['free'].value /  10 ** substrate.token_decimals),'.4f')
-    all_num = all_num + (result['data']['free'].value /  10 ** substrate.token_decimals)
     print(Fore.BLUE+"[address: {},balance: {}-{}]".format(address,balance,substrate.token_symbol))
+    return (result['data']['free'].value /  10 ** substrate.token_decimals)
+
 
 #address='st7mBWaPvtszhXdjfkVTXjDMFJDcmc8gvZA6gmUVeToPNnGuq'
 #query_balance(substrate,address)
@@ -32,7 +33,7 @@ def main():
         with open(argv[1],'r') as f:
             all_address = load(f)['address']
             for address in all_address:
-                query_balance(substrate,address)
+                all_num=all_num + query_balance(substrate,address)
         print(all_num)
     else:
         print("Usage: {} filename".format(basename(argv[0])))
