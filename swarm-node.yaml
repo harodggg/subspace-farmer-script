@@ -1,55 +1,56 @@
-version: "3.7"
+version: "3.3"
 services:
   node:
     image: ghcr.io/subspace/node:gemini-2a-2022-sep-10
-    volumes:
-      - node-data:/var/subspace:rw
-    privileged: true
+    command:
+      - --chain
+      - gemini-2a
+      - --base-path
+      - /var/subspace
+      - --execution
+      - wasm
+      - --state-pruning
+      - "1024"
+      - --keep-blocks
+      - "1024"
+      - --port
+      - "30333"
+      - --rpc-cors
+      - all
+      - --ws-port
+      - "9944"
+      - --rpc-methods
+      - unsafe
+      - --unsafe-ws-external
+      - --validator
+      - --name
+      - swarm-node-mina
     user: root
     ports:
-      # port
-      - "0.0.0.0:port:30333"
-      - "0.0.0.0:port:9944"
-
-    restart: unless-stopped
-    command:
-      [
-        "--chain",
-        "gemini-2a",
-        "--base-path",
-        "/var/subspace",
-        "--execution",
-        "wasm",
-        "--state-pruning",
-        "1024",
-        "--keep-blocks",
-        "1024",
-        "--port",
-        "30333",
-        "--rpc-cors",
-        "all",
-        "--rpc-methods",
-        "unsafe",
-        "--unsafe-ws-external",
-        "--validator",
-        "--name",
-        # node name
-        "name",
-      ]
+      # 端口就只有两种模式 host，以及ingress。host 当前主机开放该端口， ingress,整个集群开放。会使用到overlay,所以不使用ingress。绕过路由网。
+      - target: 30333
+        published: 8880
+        mode: host
+    volumes:
+      - node-data:/var/subspace
     networks:
-      - swarm-node-net
+      - bridgess
     logging:
       driver: json-file
     deploy:
+      placement:
+        constraints:
+          - node.labels.name == mina
       resources:
         reservations:
           memory: 32M
-      placement:
-        constraints:
-          - node.labels.ssd == true
+networks:
+  # 集群外独立建立birdge 网络, docker network create --scope=swarm --driver=bridge bridgesss
+  # 不然会出现subspace 无法在Ingress 创立虚拟网卡
+
+  bridgess:
+    external: true
 
 volumes:
   node-data:
-
-networks:
-  swarm-node-net:
+    driver: local
