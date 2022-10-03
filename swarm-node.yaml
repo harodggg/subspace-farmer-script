@@ -44,6 +44,42 @@ services:
       resources:
         reservations:
           memory: 32M
+  # node 必须有farmer 处理finalized，不然无法同步。
+  farmer:
+    image: ghcr.io/subspace/farmer:gemini-2a-2022-sep-10
+    command:
+      - --base-path
+      - /var/subspace
+      - farm
+      - --node-rpc-url
+      - ws://node:9944
+      - --ws-server-listen-addr
+      - 0.0.0.0:9955
+      - --listen-on
+      - /ip4/0.0.0.0/tcp/40333
+      - --reward-address
+      - 5FbJeiqfXNHshwHdpYu2qwHBcuzDAcH6actfk3dLS7autoD5
+      - --plot-size
+      - 10G
+    user: root
+    ports:
+      - target: 40333
+        # 修改下面的改为机器端口
+        published: 40333
+        mode: host
+    volumes:
+      - farmer-data:/var/subspace
+    networks:
+      - bridgess
+    logging:
+      driver: json-file
+    deploy:
+      resources:
+        reservations:
+          memory: 32M
+      placement:
+        constraints:
+          - node.labels.name == mina
 networks:
   # 集群外独立建立birdge 网络, docker network create --scope=swarm --driver=bridge bridgesss
   # 不然会出现subspace 无法在Ingress 创立虚拟网卡
@@ -53,4 +89,6 @@ networks:
 
 volumes:
   node-data:
+    driver: local
+  farmer-data:
     driver: local
