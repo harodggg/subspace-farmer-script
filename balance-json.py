@@ -39,7 +39,7 @@ def main():
                 if float(query_balance(substrate,address)) >= 0.5:
                     over_num = over_num + 1 
                 all_num=all_num + float(query_balance(substrate,address))
-        print(Fore.YELLOW+"All_balances is : {} tSSC. Over 0.5 tSSC address is : [ {}/{} ]".format(all_num,over_num,len(all_address)))
+        print(Fore.YELLOW+"All_balances is : {} tSSC. Over 0.5 tSSC address is : [ {} / {} ]".format(all_num,over_num,len(all_address)))
     else:
         print("Usage: {} filename".format(basename(argv[0])))
     print (Style.RESET_ALL)
