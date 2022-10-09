@@ -31,8 +31,7 @@ services:
           memory: 32M
       placement:
         constraints:
-          - node.labels.ssd == true
-
+          - node.labels.name == $node_name
 networks:
   swarm-farmer-net:
     driver: overlay
