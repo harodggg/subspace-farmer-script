@@ -11,7 +11,7 @@ for ((i = 1; i <= ${node_num}; i++)); do
     else
         address='"'$address'"'","
     fi
-
+    
     echo $address
 
 done
