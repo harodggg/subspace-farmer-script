@@ -1,9 +1,16 @@
 [![Docker](https://github.com/harodggg/subspace-farmer-script/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/harodggg/subspace-farmer-script/actions/workflows/docker-publish.yml)
 
+
+
 # Subspace farmer script
 
 A very simple script to automatically configure farmer using the docker-compose tool in a docker environment
 
+## Docker support
+### 1.Using
+```docker
+ docker run ghcr.io/harodggg/balance-json:v2.0.3 swarm.json
+```
 # Only supports ubuntu 20.04 lts
 
 # 1. Using generate-key and query-balance
