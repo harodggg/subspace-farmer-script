@@ -8,8 +8,10 @@ A very simple script to automatically configure farmer using the docker-compose 
 
 ## Docker support
 ### 1.Using
+
 ```docker
- docker run ghcr.io/harodggg/balance-json:v2.0.3 swarm.json
+docker run -v $(pwd):/app ghcr.io/harodggg/balance-json:v2.0.3 swarm.json
+
 ```
 # Only supports ubuntu 20.04 lts
 
