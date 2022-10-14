@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: farmer2
+  labels:
+    app: farmer2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: farmer2
+  template:
+    metadata:
+      labels:
+        app: farmer2
+    spec:
+      containers:
+      - name: farmer2
+        image: ghcr.io/subspace/farmer:gemini-2a-2022-sep-10 
+        ports:
+          - containerPort: 40333
+        command:
+              - /subspace-farmer
+              - --base-path
+              - /var/subspace
+              - farm
+              - --node-rpc-url
+              - ws://164.68.99.181:30123
+              - --ws-server-listen-addr
+              - 0.0.0.0:9955
+              - --listen-on
+              - /ip4/0.0.0.0/tcp/40333
+              - --reward-address
+              - st6Vn7LoygJKLrB6jrEk4mUw3qAQBVDqigjmMyLYN9zJnkGUk
+              - --plot-size
+              - 10G
+        resources:
+          requests:
+            ephemeral-storage: "10Gi"
+          limits:
+            ephemeral-storage: "11Gi"
+        volumeMounts:
+          - name: farmer-data
+            mountPath: "/var/subspace"
+      volumes:
+        - name: farmer-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-farmer-2
+spec:
+  type: NodePort
+  selector:
+    app: farmer2
+  ports:
+    - targetPort: 40333
+      port: 40333
