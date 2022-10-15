@@ -9,31 +9,29 @@ services:
     ports:
       - "0.0.0.0:40333:40333"
     restart: unless-stopped
-    command:
-      [
-        "--base-path",
-        "/var/subspace",
-        "farm",
-        "--node-rpc-url",
-        "ws://node:9944",
-        "--ws-server-listen-addr",
-        "0.0.0.0:9955",
-        "--listen-on",
-        "/ip4/0.0.0.0/tcp/40333",
-        "--reward-address",
-        "5DZhS5gUCDYUn1m5tKp3X2sBZcEJfSCfXtcxUvXMft4Gwqpa",
-        "--plot-size",
-        "30G",
-      ]
+    command: ["--base-path", "/var/subspace", "farm", "--node-rpc-url", "ws://node:9944", "--ws-server-listen-addr", "0.0.0.0:9955", "--listen-on", "/ip4/0.0.0.0/tcp/40333", "--reward-address", "5DZhS5gUCDYUn1m5tKp3X2sBZcEJfSCfXtcxUvXMft4Gwqpa", "--plot-size", "30G"]
     healthcheck:
       timeout: 5s
       interval: 30s
     networks:
       - farmer-network
-
 networks:
   farmer-network:
     external: true
-
 volumes:
   farmer-data:
+metadata:
+  name: kfarmer1
+  labels:
+    app: kfarmer1
+spec:
+  selector:
+    matchLabels:
+      app: kfarmer1
+  template:
+    metadata:
+      labels:
+        app: kfarmer1
+    spec:
+      containers:
+        - name: kfarmer1

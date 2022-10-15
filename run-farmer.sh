@@ -1073,6 +1073,102 @@ create_many_swarm() {
 	done
 
 }
+
+create_k8s() {
+	#echo $PLOT_SIZE
+	work_dir=$(pwd)
+	#echo $work_dir
+
+	mkdir $1
+
+	#echo $(pwd)/docker-compose.yaml
+	cp $(pwd)/k8s-farmer.yaml $1/farmer.yaml
+
+	sleep 0.5
+
+	export name=$2
+	yq -i '.metadata.name=env(name)' $1/farmer.yaml
+	yq -i '.metadata.labels.app=env(name)' $1/farmer.yaml
+	yq -i '.spec.selector.matchLabels.app=env(name)' $1/farmer.yaml
+	yq -i '.spec.template.metadata.labels.app=env(name)' $1/farmer.yaml
+	yq -i '.spec.template.spec.containers[0].name=env(name)' $1/farmer.yaml
+	unset name
+
+	export SFI=$IMAGE_FARMER
+	yq -i '.spec.template.spec.containers[0].image=env(SFI)' $1/farmer.yaml
+	unset SFI
+
+	export plot_size=$PLOT_SIZE
+	yq -i '.spec.template.spec.containers[0].command[-1]=env(plot_size)' $1/farmer.yaml
+	unset plot_size
+
+	export address=$3
+	yq -i '.spec.template.spec.containers[0].command[-3]=env(address)' $1/farmer.yaml
+	unset address
+
+	export rpc=$4
+	yq -i '.spec.template.spec.containers[0].command[5]=env(rpc)' $1/farmer.yaml
+	unset rpc
+
+	cd $1
+
+	#sudo docker stack deploy -c docker-compose.yaml $2 || true
+
+	sudo kubectl apply -f farmer.yaml || true
+
+	cd $work_dir
+	#echo $(pwd)
+
+}
+delete_many_k8s() { 
+	
+}
+create_many_k8s() {
+	plat_size="30G"
+	parent_path=$(get_parent_dir)
+	node_num=1
+	node_rpc=""
+	node_name=""
+	msg_info "Config: Reading k8s.json"
+	read_swarm_config $(get_current_dir)/k8s.json
+
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/k8s.json\""
+
+	msg_info "Building: Start building a swarm farmer"
+	node_num=$NODE_NUM
+	msg_info "Farmer Num: We will building \"${node_num}\" farmer/farmers"
+
+	msg_info "Base Node Name: \"${NODE_NAME}\""
+
+	msg_info "Base Dir: \"${parent_path}\""
+
+	node_rpc=${NODE_RPC}
+	msg_info "Base RPC Port: \"${node_rpc}\""
+	for ((i = 1; i <= ${node_num}; i++)); do
+		node_name=$NODE_NAME${i}
+		node_path=${parent_path}/${node_name}
+
+		msg_debug "=================farmer building==================="
+		msg_info "Node Sequence-->[build]: We start building the farmer-[$i]"
+		msg_info "Node Path-->[build]: ${node_path}"
+
+		if [ -d "${parent_path}/${node_name}" ]; then
+			msg_error "Exist: "${parent_path}/${node_name}" directory already exists"
+			msg_error "Abandon the farmer operation that continues to be established, and proceed to the next farmer establishment task"
+			msg_error "${node_name} has been failed ！！！"
+			continue
+		fi
+
+		msg_info "Image Node-->[build]: $IMAGE_FARMER"
+		msg_info "Plot Size-->[build]: $PLOT_SIZE"
+		address=${ADDRESS[$i - 1]}
+		msg_info "Address: $address"
+		create_k8s $node_path $node_name $address $node_rpc
+		msg_success "Farmer-[${i}] has been successfully built ！！！"
+	done
+
+}
+
 print_script_name() {
 	echo ".______       __    __  .__   __.     _______    ___      .___  ___.  _______ .______"
 	echo "|   _  \     |  |  |  | |  \ |  |    |   ____|  /   \     |   \/   | |   ____||   _  \	     "
@@ -1128,6 +1224,23 @@ parse_args() {
 				"delete")
 					print_script_name
 					delete_swarm
+					exit 0
+					;;
+				esac
+			fi
+			print_script_name
+			;;
+		"k8s")
+			if [ $# -eq 2 ]; then
+				case $2 in
+				"create")
+					print_script_name
+					create_many_k8s
+					exit 0
+					;;
+				"delete")
+					print_script_name
+
 					exit 0
 					;;
 				esac

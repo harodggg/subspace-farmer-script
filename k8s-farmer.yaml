@@ -45,15 +45,3 @@ spec:
       volumes:
         - name: farmer-data
           emptyDir: {}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: service-farmer-2
-spec:
-  type: NodePort
-  selector:
-    app: farmer2
-  ports:
-    - targetPort: 40333
-      port: 40333
