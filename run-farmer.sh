@@ -1270,7 +1270,7 @@ parse_args() {
 					;;
 				"delete")
 					print_script_name
-
+					delete_many_k8s
 					exit 0
 					;;
 				esac
