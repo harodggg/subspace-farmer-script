@@ -1121,7 +1121,37 @@ create_k8s() {
 
 }
 delete_many_k8s() { 
-	
+	plat_size="30G"
+	parent_path=$(get_parent_dir)
+	node_num=1
+	node_rpc=""
+	node_name=""
+	msg_info "Config: Reading k8s.json"
+	read_swarm_config $(get_current_dir)/k8s.json
+	node_num=$NODE_NUM
+	echo $node_num
+	msg_success "Path:Configuration has been read，config path is \"$(get_current_dir)/k8s.json\""
+
+	for ((i = 1; i <= ${node_num}; i++)); do
+		node_name=$NODE_NAME${i}
+		node_path=${parent_path}/${node_name}
+
+		msg_debug "=================farmer building==================="
+		msg_info "Node Sequence-->[build]: We start building the farmer-[$i]"
+		msg_info "Node Path-->[build]: ${node_path}"
+
+		if [ -d "${parent_path}/${node_name}" ]; then
+			work_dir=$(pwd)
+
+			cd ${parent_path}/${node_name}
+			sudo kubectl delete deployment ${node_name} || true
+			rm -rf ${parent_path}/${node_name}
+			msg_success "...-->[detele]:We have successfully deleted $node_path"
+			cd $work_dir
+		fi
+	done
+
+
 }
 create_many_k8s() {
 	plat_size="30G"
