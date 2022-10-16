@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodex1
+  labels:
+    app: nodex1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodex1
+  template:
+    metadata:
+      labels:
+        app: nodex1
+    spec:
+      ecurityContext:
+        fsGroup: 0
+        runAsUser: 0
+        runAsGroup: 0
+
+      containers:
+        - name: nodex1
+          image: ghcr.io/subspace/node:gemini-2a-2022-sep-10
+          ports:
+            - containerPort: 9944
+            - containerPort: 30333
+          command:
+            - /subspace-node
+            - --chain
+            - gemini-2a
+            - --base-path
+            - /var/subspace
+            - --execution
+            - wasm
+            - --state-pruning
+            - "1024"
+            - --keep-blocks
+            - "1024"
+            - --port
+            - "30333"
+            - --rpc-cors
+            - all
+            - --ws-port
+            - "9944"
+            - --rpc-methods
+            - unsafe
+            - --unsafe-ws-external
+            - --validator
+            - --name
+            - swarm-node-mina
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: "/var/subspace"
+              name: nodex-pv-storage
+        - name: famrex1
+          image: ghcr.io/subspace/farmer:gemini-2a-2022-sep-10
+          ports:
+            - containerPort: 40333
+          command:
+            - /subspace-farmer
+            - --base-path
+            - /var/subspace
+            - farm
+            - --node-rpc-url
+            - ws://localhost:9944
+            - --ws-server-listen-addr
+            - 0.0.0.0:9955
+            - --listen-on
+            - /ip4/0.0.0.0/tcp/40333
+            - --reward-address
+            - st6Vn7LoygJKLrB6jrEk4mUw3qAQBVDqigjmMyLYN9zJnkGUk
+            - --plot-size
+            - 10G
+          resources:
+            requests:
+              ephemeral-storage: "10Gi"
+            limits:
+              ephemeral-storage: "11Gi"
+
+          volumeMounts:
+            - name: farmer-data
+              mountPath: "/var/subspace"
+
+      volumes:
+        - name: farmer-data
+          emptyDir: {}
+        - name: nodex-pv-storage
+          persistentVolumeClaim:
+            claimName: nodex-pv-claim
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nodex-pv-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nodex-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/data"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodex-svc
+  namespace: default
+spec:
+  type: ClusterIP
+  selector:
+    app: nodex1
+  ports:
+    - name: subspace-rpc
+      port: 9944
+      TargetPort: 9944
