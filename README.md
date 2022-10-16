@@ -6,6 +6,13 @@
 
 A very simple script to automatically configure farmer using the docker-compose tool in a docker environment
 
+
+## K8S Using
+<img width="1356" alt="image" src="https://user-images.githubusercontent.com/31732456/196018932-dee5d911-7a77-4dd8-a3fe-90a90898e0af.png">
+## Docker Swarm Using
+<img width="1475" alt="image" src="https://user-images.githubusercontent.com/31732456/196018939-ffb74bde-5863-4009-9a0d-7827bca4edf3.png">
+
+
 ## Docker support
 ### 1.Using
 
@@ -13,6 +20,8 @@ A very simple script to automatically configure farmer using the docker-compose 
 docker run -v $(pwd):/app ghcr.io/harodggg/balance-json:v2.0.3 swarm.json
 
 ```
+
+
 # Only supports ubuntu 20.04 lts
 
 # 1. Using generate-key and query-balance
