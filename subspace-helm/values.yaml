@@ -13,6 +13,8 @@ image:
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "gemini-2a-2022-sep-10"
+  
+address: "st6Vn7LoygJKLrB6jrEk4mUw3qAQBVDqigjmMyLYN9zJnkGUk"
 
 imagePullSecrets: []
 nameOverride: ""

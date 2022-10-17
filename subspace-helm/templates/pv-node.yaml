@@ -1,4 +1,4 @@
-apiVersion: {{ .Release.apiVersion }}
+apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: {{.Values.node.name}}-pv-volume

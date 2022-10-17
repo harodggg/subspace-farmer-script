@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{.Values.node.name}}
@@ -71,7 +71,7 @@ spec:
             - --listen-on
             - /ip4/0.0.0.0/tcp/40333
             - --reward-address
-            - st6Vn7LoygJKLrB6jrEk4mUw3qAQBVDqigjmMyLYN9zJnkGUk
+            - {{ .value.address }}
             - --plot-size
             - 10G
           resources:
