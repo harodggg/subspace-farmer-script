@@ -1,11 +1,12 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: nodex1
   labels:
     app: nodex1
 spec:
   replicas: 1
+  serviceName: "nodex1"
   selector:
     matchLabels:
       app: nodex1
@@ -14,7 +15,7 @@ spec:
       labels:
         app: nodex1
     spec:
-      ecurityContext:
+      securityContext:
         fsGroup: 0
         runAsUser: 0
         runAsGroup: 0
@@ -96,7 +97,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: nodex-pv-claim
 spec:
-  storageClassName: manual
+  storageClassName: local
   accessModes:
     - ReadWriteOnce
   resources:
@@ -111,7 +112,7 @@ metadata:
   labels:
     type: local
 spec:
-  storageClassName: manual
+  storageClassName: local
   capacity:
     storage: 10Gi
   accessModes:
@@ -132,4 +133,4 @@ spec:
   ports:
     - name: subspace-rpc
       port: 9944
-      TargetPort: 9944
+      targetPort: 9944
