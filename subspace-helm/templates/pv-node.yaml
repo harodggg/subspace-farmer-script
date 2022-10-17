@@ -1,0 +1,14 @@
+apiVersion: {{ .Release.apiVersion }}
+kind: PersistentVolume
+metadata:
+  name: {{.Values.node.name}}-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: local
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/var/data"

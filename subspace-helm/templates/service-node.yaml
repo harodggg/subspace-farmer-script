@@ -1,0 +1,13 @@
+apiVersion: {{ .Release.apiVersion }}
+kind: Service
+metadata:
+  name: {{.Values.node.name}}-svc
+  namespace: default
+spec:
+  type: ClusterIP
+  selector:
+    app: {{.Values.node.name}}
+  ports:
+    - name: subspace-rpc
+      port: 9944
+      targetPort: 9944

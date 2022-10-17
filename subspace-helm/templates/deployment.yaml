@@ -1,61 +1,93 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: {{ .Release.apiVersion }}
+kind: StatefulSet
 metadata:
-  name: {{ include "subspace.fullname" . }}
+  name: {{.Values.node.name}}
   labels:
-    {{- include "subspace.labels" . | nindent 4 }}
+    app: {{.Values.node.name}}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  replicas: 1
+  serviceName: {{.Values.node.name}}
   selector:
     matchLabels:
-      {{- include "subspace.selectorLabels" . | nindent 6 }}
+      app: {{.Values.node.name}}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
-        {{- include "subspace.selectorLabels" . | nindent 8 }}
+        app: {{.Values.node.name}}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "subspace.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        fsGroup: 0
+        runAsUser: 0
+        runAsGroup: 0
+
+      containers:ß
+        - name: {{.Values.node.name}}
+          image: {{.Values.image.node-repository}}:{{.Values.image.tag}}
           ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            - containerPort: 9944
+            - containerPort: 30333
+          command:
+            - /subspace-node
+            - --chain
+            - gemini-2a
+            - --base-path
+            - /var/subspace
+            - --execution
+            - wasm
+            - --state-pruning
+            - "1024"
+            - --keep-blocks
+            - "1024"
+            - --port
+            - "30333"
+            - --rpc-cors
+            - all
+            - --ws-port
+            - "9944"
+            - --rpc-methods
+            - unsafe
+            - --unsafe-ws-external
+            - --validator
+            - --name
+            - swarm-node-mina
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: "/var/subspace"
+              name: {{.Values.node.name}}-pv-storage
+        - name: {{.Values.node.name}}-farmer
+          image:  {{.Values.image.farmer-repository}}:{{.Values.image.tag}}
+          ports:
+            - containerPort: 40333
+          command:
+            - /subspace-farmer
+            - --base-path
+            - /var/subspace
+            - farm
+            - --node-rpc-url
+            - ws://localhost:9944
+            - --ws-server-listen-addr
+            - 0.0.0.0:9955
+            - --listen-on
+            - /ip4/0.0.0.0/tcp/40333
+            - --reward-address
+            - st6Vn7LoygJKLrB6jrEk4mUw3qAQBVDqigjmMyLYN9zJnkGUk
+            - --plot-size
+            - 10G
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+            requests:
+              ephemeral-storage: "10Gi"
+            limits:
+              ephemeral-storage: "11Gi"
+
+          volumeMounts:
+            - name: {{.Values.node.name}}-farmer-data
+              mountPath: "/var/subspace"
+
+      volumes:
+        - name: {{.Values.node.name}}-farmer-data
+          emptyDir: {}
+        - name: {{.Values.node.name}}-pv-storage
+          persistentVolumeClaim:
+            claimName: {{.Values.node.name}}-pv-claim
+
