@@ -13,6 +13,14 @@ A very simple script to automatically configure farmer using the docker-compose 
 <img width="1475" alt="image" src="https://user-images.githubusercontent.com/31732456/196018939-ffb74bde-5863-4009-9a0d-7827bca4edf3.png">
 
 
+## K8s Helm Using
+```bash
+git clone reg
+cd  reg
+helm --name="" ./
+```
+<img width="626" alt="image" src="https://user-images.githubusercontent.com/31732456/196295751-be9da9d1-5e2d-4f68-9b60-c61c6d10f1f9.png">
+
 ## Docker support
 ### 1.Using
 
