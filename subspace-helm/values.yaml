@@ -8,8 +8,8 @@ node:
   name: "nodex"
 
 image:
-  node-repository: "ghcr.io/subspace/node"
-  farmer-repository: "ghcr.io/subspace/farmer"
+  node: "ghcr.io/subspace/node"
+  farmer: "ghcr.io/subspace/farmer"
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "gemini-2a-2022-sep-10"

@@ -1,4 +1,4 @@
-apiVersion: {{ .Release.apiVersion }}
+apiVersion: v1
 kind: StatefulSet
 metadata:
   name: {{.Values.node.name}}
@@ -20,9 +20,9 @@ spec:
         runAsUser: 0
         runAsGroup: 0
 
-      containers:ß
+      containers:
         - name: {{.Values.node.name}}
-          image: {{.Values.image.node-repository}}:{{.Values.image.tag}}
+          image: {{.Values.image.node}}:{{.Values.image.tag}}
           ports:
             - containerPort: 9944
             - containerPort: 30333
@@ -56,7 +56,7 @@ spec:
             - mountPath: "/var/subspace"
               name: {{.Values.node.name}}-pv-storage
         - name: {{.Values.node.name}}-farmer
-          image:  {{.Values.image.farmer-repository}}:{{.Values.image.tag}}
+          image:  {{.Values.image.farmer}}:{{.Values.image.tag}}
           ports:
             - containerPort: 40333
           command:
